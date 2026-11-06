@@ -28,7 +28,7 @@ export class Chunk {
         this.z = z * CHUNK_SIZE_Z;
         this.map = null;
 
-        this.index_count = 0;
+        this.index_count = null;
         this.ibo = null;
         this.position_vbo = null;
         this.color_vbo = null;
@@ -42,7 +42,14 @@ export class Chunk {
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             this.map[x] = new Array(CHUNK_SIZE_Y);
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                this.map[x][y] = new Array(CHUNK_SIZE_Z).fill(3);
+                this.map[x][y] = new Array(CHUNK_SIZE_Z).fill(0);
+            }
+        }
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+                for (let i = 0; i < 3; i++) {
+                    this.map[x][i][z] = 1;
+                }
             }
         }
     }
@@ -52,6 +59,7 @@ export class Chunk {
      * @returns {void}
      */
     generate_mesh(gl) {
+        this.index_count = 0;
         let index_offset = 0;
         /** @type {Array<number>} */
         let pos = [];

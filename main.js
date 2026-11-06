@@ -137,7 +137,7 @@ function init(gl) {
 
     document.addEventListener("pointerlockchange", () => {
         if (document.pointerLockElement !== canvas) {
-            for (const key of key_inputs.keys()) {
+            for (const key of Object.keys(key_inputs)) {
                 key_inputs[key] = false;
             }
             mouse_inputs.left_click = false;
@@ -174,10 +174,10 @@ function init(gl) {
             return;
         }
 
-        if (event.botton === 0) {
+        if (event.button === 0) {
             mouse_inputs.left_click = false;
         }
-        if (mouse.botton === 2) {
+        if (event.button === 2) {
             mouse_inputs.right_click = false;
         }
     });

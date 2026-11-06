@@ -1,4 +1,4 @@
-import { deg2rad, rotate_vector_ZYX } from "./rotation.js";
+import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import {
     MOUSE_SENSITIVITY,
     CHUNK_SIZE_X,
@@ -86,7 +86,7 @@ function break_block(gl, chunks) {
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
 
-    const direction = rotate_vector_ZYX({ x: 0, y: 0, z: 1 }, { x: -rot_x, y: -rot_y, z: -rot_z });
+    const direction = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: rot_x, y: rot_y, z: rot_z });
     
     const ray_step = 0.05;
     const max_distance = 4;
@@ -136,7 +136,7 @@ function place_block(gl, chunks, type) {
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
 
-    const direction = rotate_vector_ZYX({ x: 0, y: 0, z: 1 }, { x: -rot_x, y: -rot_y, z: -rot_z });
+    const direction = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: rot_x, y: rot_y, z: rot_z });
 
     let previous_x = null;
     let previous_y = null;
@@ -169,19 +169,19 @@ function place_block(gl, chunks, type) {
             hit_local_y < CHUNK_SIZE_Y &&
             hit_chunk.map[hit_local_x][hit_local_y][hit_local_z] !== 0
         ) {
-            if (previos_x === null || previos_y === null || previos_z === null) {
+            if (previous_x === null || previous_y === null || previous_z === null) {
                 break;
             }
-            const place_chunk_x = Math.floor(previos_x / CHUNK_SIZE_X);
-            const place_chunk_z = Math.floor(previos_z / CHUNK_SIZE_Z);
+            const place_chunk_x = Math.floor(previous_x / CHUNK_SIZE_X);
+            const place_chunk_z = Math.floor(previous_z / CHUNK_SIZE_Z);
             const place_chunk = chunks.get(get_chunk_key(place_chunk_x, place_chunk_z));
             if (place_chunk === undefined) {
                 break;
             }
 
-            const place_local_x = previos_x - place_chunk.x;
-            const place_local_y = previos_y
-            const place_local_z = previos_z - place_chunk.z;
+            const place_local_x = previous_x - place_chunk.x;
+            const place_local_y = previous_y
+            const place_local_z = previous_z - place_chunk.z;
             if (place_local_y < 0 || place_local_y >= CHUNK_SIZE_Y) {
                 break;
             }
@@ -194,7 +194,7 @@ function place_block(gl, chunks, type) {
                 place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
                 break;
             }
-            target_chunk.generate_mesh(gl);
+            place_chunk.generate_mesh(gl);
             break;
         }
         previous_x = hit_block_x;
@@ -283,7 +283,7 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
     if (mouse_inputs.left_click === true) {
         break_block(gl, chunks);
     }
-    if (mouse_inputs.left_click === true) {
+    if (mouse_inputs.right_click === true) {
         place_block(gl, chunks, 1);
     }
 }
