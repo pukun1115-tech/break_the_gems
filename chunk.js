@@ -59,6 +59,18 @@ export class Chunk {
      * @returns {void}
      */
     generate_mesh(gl) {
+        if (this.ibo !== null) {
+            gl.deleteBuffer(this.ibo);
+        }
+        if (this.position_vbo !== null) {
+            gl.deleteBuffer(this.position_vbo);
+        }
+        if (this.color_vbo !== null) {
+            gl.deleteBuffer(this.color_vbo);
+        }
+        if (this.texture_coord_vbo !== null) {
+            gl.deleteBuffer(this.texture_coord_vbo);
+        }
         this.index_count = 0;
         let index_offset = 0;
         /** @type {Array<number>} */

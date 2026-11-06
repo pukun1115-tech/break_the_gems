@@ -87,7 +87,7 @@ function break_block(gl, chunks) {
     const rot_z = deg2rad(player.rot.z);
 
     const direction = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: rot_x, y: rot_y, z: rot_z });
-    
+
     const ray_step = 0.05;
     const max_distance = 4;
 
@@ -107,7 +107,7 @@ function break_block(gl, chunks) {
         if (target_chunk === undefined) {
             continue;
         }
-        
+
         const local_x = world_x - target_chunk.x;
         const local_y = world_y;
         const local_z = world_z - target_chunk.z;
@@ -159,7 +159,7 @@ function place_block(gl, chunks, type) {
         if (hit_chunk === undefined) {
             continue;
         }
-        
+
         const hit_local_x = hit_block_x - hit_chunk.x;
         const hit_local_y = hit_block_y;
         const hit_local_z = hit_block_z - hit_chunk.z;
@@ -188,7 +188,7 @@ function place_block(gl, chunks, type) {
             if (place_chunk.map[place_local_x][place_local_y][place_local_z] !== 0) {
                 break;
             }
-            
+
             place_chunk.map[place_local_x][place_local_y][place_local_z] = type;
             if (check_player_chunk_collision(chunks, player.pos.x, player.pos.y, player.pos.z)) {
                 place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
@@ -250,10 +250,10 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
 
     if (is_on_ground(chunks, player.pos.x, player.pos.y, player.pos.z)) {
         player.velocity_y = 0;
-        
-        if(key_inputs["Space"] === true) {
+
+        if (key_inputs["Space"] === true) {
             player.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
-        } 
+        }
     }
 
     next_y = player.pos.y + player.velocity_y * delta_time;
@@ -278,7 +278,7 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
     if (key_inputs["KeyM"] === true) {
         player.FOV = Math.max(5, player.FOV - 1);
     }
-    
+
     //break and place block
     if (mouse_inputs.left_click === true) {
         break_block(gl, chunks);

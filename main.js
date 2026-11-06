@@ -181,7 +181,7 @@ function init(gl) {
             mouse_inputs.right_click = false;
         }
     });
-        
+
 
     canvas.addEventListener("mousemove", (event) => {
         if (document.pointerLockElement !== canvas) {
