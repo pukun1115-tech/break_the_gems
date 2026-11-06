@@ -71,7 +71,7 @@ export function rotate_vector_XYZ(vector, rotation) {
  *     z:number
  * }}
  */
-export function rotateVectorZYX(vector, rotation) {
+export function rotate_vector_ZYX(vector, rotation) {
     const { x: rx, y: ry, z: rz } = rotation;
 
     const cosx = Math.cos(rx);
