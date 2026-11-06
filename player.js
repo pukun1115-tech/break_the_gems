@@ -64,12 +64,12 @@ let player_velocity_y = 0;
 
 /**
  * @param {Map<string, Chunk>} chunks
- * @param {{x: number, y: number}} pointer_movement
+ * @param {{movement_x: number, movement_y: number}} mouse_inputs
  * @param {Record<string, boolean>} key_inputs
  * @param {number} delta_time
  * @returns {void}
  */
-export function player_update(chunks, pointer_movement, key_inputs, delta_time) {
+export function player_update(chunks, mouse_inputs, key_inputs, delta_time) {
     const cosy = Math.cos(deg2rad(player.rot.y));
     const siny = Math.sin(deg2rad(player.rot.y));
 
@@ -108,7 +108,7 @@ export function player_update(chunks, pointer_movement, key_inputs, delta_time) 
     if (on_ground) {
         player_velocity_y = 0;
         
-        if(key_inputs["Space"]) {
+        if(key_inputs["Space"] === true) {
             player_velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
         } 
     }
@@ -125,8 +125,8 @@ export function player_update(chunks, pointer_movement, key_inputs, delta_time) 
 
     player.pos.y = next_y;
     
-    player.rot.x = Math.max(-90, Math.min(90, player.rot.x + pointer_movement.y * MOUSE_SENSITIVITY));
-    player.rot.y = player.rot.y - pointer_movement.x * MOUSE_SENSITIVITY;
+    player.rot.x = Math.max(-90, Math.min(90, player.rot.x + mouse_inputs.movement_y * MOUSE_SENSITIVITY));
+    player.rot.y = player.rot.y - mouse_inputs.movement_x * MOUSE_SENSITIVITY;
 
     if (key_inputs["KeyN"] === true) {
         player.FOV = Math.min(120, player.FOV + 1);
