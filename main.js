@@ -214,8 +214,8 @@ function init(gl) {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
 
-    for (let i = -2; i < 2; i++) {
-        for (let j = -2; j < 2; j++) {
+    for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
             chunks.set(get_chunk_key(i, j), new Chunk(gl, i, j));
         }
     }
