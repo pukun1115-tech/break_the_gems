@@ -118,13 +118,14 @@ function place_block(chunks) {
 
 
 /**
+ * @param {WebGLRenderingContext} gl
  * @param {Map<string, Chunk>} chunks
  * @param {{movement_x: number, movement_y: number}} mouse_inputs
  * @param {Record<string, boolean>} key_inputs
  * @param {number} delta_time
  * @returns {void}
  */
-export function player_update(chunks, mouse_inputs, key_inputs, delta_time) {
+export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) {
     const cosy = Math.cos(deg2rad(player.rot.y));
     const siny = Math.sin(deg2rad(player.rot.y));
 
