@@ -4,7 +4,8 @@ import { Chunk } from "./chunk.js";
 const player = {
     pos: { x: 0, y: 40, z: 0 },
     rot: { x: 0, y: 0, z: 0 },
-    FOV: 80
+    FOV: 80,
+    velocity_y: 0
 };
 export function get_player() {
     return structuredClone(player);
@@ -60,7 +61,6 @@ function is_on_ground(chunks, px, py, pz) {
     return check_player_chunk_collision(chunks, px, py - 0.01, pz);
 }
 
-let player_velocity_y = 0;
 
 /**
  * @param {Map<string, Chunk>} chunks
@@ -103,22 +103,22 @@ export function player_update(chunks, mouse_inputs, key_inputs, delta_time) {
 
     const on_ground = is_on_ground(chunks, player.pos.x, player.pos.y, player.pos.z);
 
-    player_velocity_y -= GRAVITY * delta_time;
+    player.velocity_y -= GRAVITY * delta_time;
 
     if (on_ground) {
-        player_velocity_y = 0;
+        player.velocity_y = 0;
         
         if(key_inputs["Space"] === true) {
-            player_velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
+            player.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
         } 
     }
 
-    next_y = player.pos.y + player_velocity_y * delta_time;
+    next_y = player.pos.y + player.velocity_y * delta_time;
 
-    if (player_velocity_y !== 0) {
-        const scale = (player_velocity_y > 0 ? -0.005 : 0.005);
+    if (player.velocity_y !== 0) {
+        const scale = (player.velocity_y > 0 ? -0.005 : 0.005);
         while (check_player_chunk_collision(chunks, player.pos.x, next_y, player.pos.z)) {
-            player_velocity_y = 0;
+            player.velocity_y = 0;
             next_y += scale;
         }
     }
@@ -132,6 +132,6 @@ export function player_update(chunks, mouse_inputs, key_inputs, delta_time) {
         player.FOV = Math.min(120, player.FOV + 1);
     }
     if (key_inputs["KeyM"] === true) {
-        player.FOV = Math.max(30, player.FOV - 1);
+        player.FOV = Math.max(5, player.FOV - 1);
     }
 }
