@@ -83,7 +83,7 @@ function main_loop(gl, current_time, last_time) {
     //delta_time 1フレーム何秒か
     const delta_time = (current_time - last_time) / 1000;
     //操作
-    player_update(chunks, mouse_inputs, key_inputs, delta_time);
+    player_update(gl, chunks, mouse_inputs, key_inputs, delta_time);
     mouse_inputs.movement_x = 0;
     mouse_inputs.movement_y = 0;
     const player = get_player();
