@@ -62,16 +62,12 @@ const pMatrix = Mat4.identity(Mat4.create());
 const mvpMatrix = Mat4.identity(Mat4.create());
 
 const key_inputs = {};
-window.addEventListener("keydown", (event) => {
-    key_inputs[event.code] = true;
-});
-window.addEventListener("keyup", (event) => {
-    key_inputs[event.code] = false;
-});
 
-const pointer_movement = {
-    x: 0,
-    y: 0
+const mouse_inputs = {
+    movement_x: 0,
+    movement_y: 0,
+    left_click: false,
+    right_click: false
 };
 
 /** @type {Map<string, Chunk>} */
@@ -87,9 +83,9 @@ function main_loop(gl, current_time, last_time) {
     //delta_time 1フレーム何秒か
     const delta_time = (current_time - last_time) / 1000;
     //操作
-    player_update(chunks, pointer_movement, key_inputs, delta_time);
-    pointer_movement.x = 0;
-    pointer_movement.y = 0;
+    player_update(chunks, mouse_inputs, key_inputs, delta_time);
+    mouse_inputs.movement_x = 0;
+    mouse_inputs.movement_y = 0;
     const player = get_player();
     //gldraw
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -132,6 +128,22 @@ function init(gl) {
         event.preventDefault();
     });
 
+    window.addEventListener("keydown", (event) => {
+        key_inputs[event.code] = true;
+    });
+    window.addEventListener("keyup", (event) => {
+        key_inputs[event.code] = false;
+    });
+
+    document.addEventListener("pointerlockchange", () => {
+        if (document.pointerLockElement !== canvas) {
+            for (const key of key_inputs.keys()) {
+                key_inputs[key] = false;
+            }
+            mouse_inputs.left_click = false;
+            mouse_inputs.right_click = false;
+        }
+    });
     canvas.addEventListener("click", () => {
         canvas.requestPointerLock();
     });
@@ -150,20 +162,34 @@ function init(gl) {
         }
 
         if (event.button === 0) {
-            //break_Block();
+            mouse_inputs.left_click = true;
         }
         if (event.button === 2) {
-            //place_block()
+            mouse_inputs.right_click = true;
         }
     });
+
+    canvas.addEventListener("mouseup", (event) => {
+        if (document.pointerLockElement !== canvas) {
+            return;
+        }
+
+        if (event.botton === 0) {
+            mouse_inputs.left_click = false;
+        }
+        if (mouse.botton === 2) {
+            mouse_inputs.right_click = false;
+        }
+    });
+        
 
     canvas.addEventListener("mousemove", (event) => {
         if (document.pointerLockElement !== canvas) {
             return;
         }
 
-        pointer_movement.x += event.movementX;
-        pointer_movement.y += event.movementY;
+        mouse_inputs.movement_x += event.movementX;
+        mouse_inputs.movement_y += event.movementY;
     });
 
     /**
