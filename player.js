@@ -1,5 +1,13 @@
 import { deg2rad, rotate_vector_ZYX } from "./rotation.js";
-import { MOUSE_SENSITIVITY, CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z, PLAYER_MOVE_SPEED, GRAVITY, PLAYER_JUMP_HEIGHT } from "./config.js";
+import {
+    MOUSE_SENSITIVITY,
+    CHUNK_SIZE_X,
+    CHUNK_SIZE_Y,
+    CHUNK_SIZE_Z,
+    PLAYER_MOVE_SPEED,
+    GRAVITY,
+    PLAYER_JUMP_HEIGHT
+} from "./config.js";
 import { Chunk, get_chunk_key } from "./chunk.js";
 
 const player = {
@@ -28,7 +36,12 @@ function check_player_chunk_collision(chunks, px, py, pz) {
     const p_max_z = pz + 0.3;
     const p_min_z = pz - 0.3;
     for (const c of chunks.values()) {
-        if (c.x > p_max_x || c.x + CHUNK_SIZE_X < p_min_x || c.z > p_max_z || c.z + CHUNK_SIZE_Z < p_min_z) {
+        if (
+            c.x > p_max_x ||
+            c.x + CHUNK_SIZE_X < p_min_x ||
+            c.z > p_max_z ||
+            c.z + CHUNK_SIZE_Z < p_min_z
+        ) {
             continue;
         }
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
@@ -65,7 +78,7 @@ function is_on_ground(chunks, px, py, pz) {
 
 /**
  * @param {WebGLRenderingContext} gl
- * @param {Record<string, Chunk>} chunks
+ * @param {Map<string, Chunk>} chunks
  * @returns {void}
  */
 function break_block(gl, chunks) {
@@ -112,8 +125,82 @@ function break_block(gl, chunks) {
     }
 }
 
-function place_block(chunks) {
-    //
+/**
+ * @param {WebGLRenderingContext} gl
+ * @param {Map<string, Chunk>} chunks
+ * @param {number} type
+ * @returns {void}
+ */
+function place_block(gl, chunks, type) {
+    const rot_x = deg2rad(player.rot.x);
+    const rot_y = deg2rad(player.rot.y);
+    const rot_z = deg2rad(player.rot.z);
+
+    const direction = rotate_vector_ZYX({ x: 0, y: 0, z: 1 }, { x: -rot_x, y: -rot_y, z: -rot_z });
+
+    let previous_x = null;
+    let previous_y = null;
+    let previous_z = null;
+    const ray_step = 0.05;
+    const max_distance = 4;
+
+    for (let distance = 0; distance <= max_distance; distance += ray_step) {
+        const ray_x = player.pos.x + direction.x * distance;
+        const ray_y = player.pos.y + 1.6 + direction.y * distance;
+        const ray_z = player.pos.z + direction.z * distance;
+
+        const hit_block_x = Math.floor(ray_x);
+        const hit_block_y = Math.floor(ray_y);
+        const hit_block_z = Math.floor(ray_z);
+
+        const hit_chunk_x = Math.floor(hit_block_x / CHUNK_SIZE_X);
+        const hit_chunk_z = Math.floor(hit_block_z / CHUNK_SIZE_Z);
+        const hit_chunk = chunks.get(get_chunk_key(hit_chunk_x, hit_chunk_z));
+        if (hit_chunk === undefined) {
+            continue;
+        }
+        
+        const hit_local_x = hit_block_x - hit_chunk.x;
+        const hit_local_y = hit_block_y;
+        const hit_local_z = hit_block_z - hit_chunk.z;
+
+        if (
+            hit_local_y >= 0 &&
+            hit_local_y < CHUNK_SIZE_Y &&
+            hit_chunk.map[hit_local_x][hit_local_y][hit_local_z] !== 0
+        ) {
+            if (previos_x === null || previos_y === null || previos_z === null) {
+                break;
+            }
+            const place_chunk_x = Math.floor(previos_x / CHUNK_SIZE_X);
+            const place_chunk_z = Math.floor(previos_z / CHUNK_SIZE_Z);
+            const place_chunk = chunks.get(get_chunk_key(place_chunk_x, place_chunk_z));
+            if (place_chunk === undefined) {
+                break;
+            }
+
+            const place_local_x = previos_x - place_chunk.x;
+            const place_local_y = previos_y
+            const place_local_z = previos_z - place_chunk.z;
+            if (place_local_y < 0 || place_local_y >= CHUNK_SIZE_Y) {
+                break;
+            }
+            if (place_chunk.map[place_local_x][place_local_y][place_local_z] !== 0) {
+                break;
+            }
+            
+            place_chunk.map[place_local_x][place_local_y][place_local_z] = type;
+            if (check_player_chunk_collision(chunks, player.pos.x, player.pos.y, player.pos.z)) {
+                place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
+                break;
+            }
+            target_chunk.generate_mesh(gl);
+            break;
+        }
+        previous_x = hit_block_x;
+        previous_y = hit_block_y;
+        previous_z = hit_block_z;
+    }
 }
 
 
@@ -133,6 +220,7 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
     let next_y = player.pos.y;
     let next_z = player.pos.z;
 
+    //WASD
     if (key_inputs["KeyW"] === true) {
         next_x += PLAYER_MOVE_SPEED * delta_time * siny;
         next_z += PLAYER_MOVE_SPEED * delta_time * cosy;
@@ -157,11 +245,10 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
         player.pos.z = next_z;
     }
 
-    const on_ground = is_on_ground(chunks, player.pos.x, player.pos.y, player.pos.z);
-
+    //velocity_y
     player.velocity_y -= GRAVITY * delta_time;
 
-    if (on_ground) {
+    if (is_on_ground(chunks, player.pos.x, player.pos.y, player.pos.z)) {
         player.velocity_y = 0;
         
         if(key_inputs["Space"] === true) {
@@ -180,7 +267,8 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
     }
 
     player.pos.y = next_y;
-    
+
+    //view
     player.rot.x = Math.max(-90, Math.min(90, player.rot.x + mouse_inputs.movement_y * MOUSE_SENSITIVITY));
     player.rot.y = player.rot.y - mouse_inputs.movement_x * MOUSE_SENSITIVITY;
 
@@ -189,5 +277,13 @@ export function player_update(gl, chunks, mouse_inputs, key_inputs, delta_time) 
     }
     if (key_inputs["KeyM"] === true) {
         player.FOV = Math.max(5, player.FOV - 1);
+    }
+    
+    //break and place block
+    if (mouse_inputs.left_click === true) {
+        break_block(gl, chunks);
+    }
+    if (mouse_inputs.left_click === true) {
+        place_block(gl, chunks, 1);
     }
 }
