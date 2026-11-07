@@ -1,9 +1,11 @@
 import { WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, get_chunk_key } from "./chunk.js";
 import { player_update, get_player } from "./player.js";
-import { draw } from "./draw.js";
+import { draw, canvas } from "./draw.js";
 
 const socket = new WebSocket(`${WEBSOCKET_PROTOCOL}//${window.location.host}`);
+
+//socket.addEventListener();
 
 const key_inputs = {};
 
@@ -17,12 +19,6 @@ const mouse_inputs = {
 /** @type {Map<string, Chunk>} */
 let chunks = new Map();
 
-/**
- * @param {WebGLRenderingContext} gl
- * @param {number} current_time
- * @param {number} last_time
- * @returns {void}
- */
 function main_loop(current_time, last_time) {
     //delta_time 1フレーム何秒か
     const delta_time = (current_time - last_time) / 1000;
@@ -37,11 +33,7 @@ function main_loop(current_time, last_time) {
     window.requestAnimationFrame((next) => { main_loop(next, current_time); });
 }
 
-/**
- * @param {WebGLRenderingContext} gl
- * @returns {void}
- */
-function init(gl) {
+function init() {
     canvas.addEventListener("contextmenu", (event) => {
         event.preventDefault();
     });
@@ -65,12 +57,12 @@ function init(gl) {
     canvas.addEventListener("click", () => {
         canvas.requestPointerLock();
     });
-    document.addEventListener("visibilitychange", (event) => {
+    document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             document.exitPointerLock();
         }
     });
-    document.addEventListener("blur", (event) => {
+    document.addEventListener("blur", () => {
         document.exitPointerLock();
     });
 

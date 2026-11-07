@@ -15,7 +15,7 @@ import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Mat4 } from "./matrix.js";
 
 /** @type {HTMLCanvasElement} */
-const canvas = document.getElementById("canvas");
+export const canvas = document.getElementById("canvas");
 /** @type {WebGLRenderingContext | null} */
 export const gl = canvas.getContext("webgl");
 if (gl === null) {
