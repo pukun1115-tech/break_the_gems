@@ -8,7 +8,7 @@ export const PLAYER_JUMP_HEIGHT = 1.25;
 
 export const MOUSE_SENSITIVITY = 0.05;
 
-const TEXTURE_SIZE = 32;
+const TEXTURE_SIZE = 16;
 
 /**
  * @param {Array<number>} coords
@@ -73,10 +73,10 @@ export const BLOCK_TEXTURECOORD = {
     }),
     5: createBlockUV({
         "top": [
-            16, 4,
-            20, 4,
-            20, 0,
-            16, 0
+            0, 8,
+            4, 8,
+            4, 4,
+            0, 4
         ]
     })
 };
