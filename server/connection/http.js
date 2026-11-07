@@ -16,7 +16,6 @@ export function create_http_server(request, response) {
         response.end("404 Not Found");
         return;
     }
-    console.log(request_url);
     const extension = path.extname(request_url);
     const file_path = path.join(DEFAULT_PATH, "public", request_url);
     fs.readFile(file_path, (error, data) => {

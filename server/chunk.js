@@ -33,7 +33,7 @@ export class Chunk {
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             this.map[x] = new Array(CHUNK_SIZE_Y);
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                this.map[x][y] = new Array(CHUNK_SIZE_Z).fill(0);
+                this.map[x][y] = new Array(CHUNK_SIZE_Z).fill(2);
             }
         }
     }

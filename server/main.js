@@ -24,11 +24,13 @@ server.on("upgrade", (request, socket, head) => {
         return;
     }
 
+    Game.add_player(socket);
+
     let received_data_buffer = Buffer.alloc(0);
     if (head?.length > 0) {
         received_data_buffer = handle_received_buffer(
             socket,
-            Buffer.concat([received_data_buffer, head])
+            Buffer.concat([received_data_buffer, head]),
         );
     }
 
@@ -59,3 +61,8 @@ server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`- Local: http://localhost:${PORT}/`);
 });
+
+Game.init_chunks();
+setInterval(() => {
+    Game.update();
+}, 1000 / 60);

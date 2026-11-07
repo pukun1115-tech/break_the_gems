@@ -13,7 +13,7 @@ export function get_chunk_key(x, z) {
 
 /**
  * @param {string} key
- * @returns {{x: number, y: number}} 
+ * @returns {{x: number, z: number}} 
  */
 export function parse_chunk_key(key) {
     const [str_x, str_z] = key.split("_");
@@ -34,8 +34,10 @@ export class Chunk {
         this.position_vbo = null;
         this.color_vbo = null;
         this.texture_coord_vbo = null;
-        this.generate_map();
-        this.generate_mesh(gl);
+    }
+
+    set_map(map) {
+        this.map = map;
     }
 
     generate_map() {
@@ -55,11 +57,7 @@ export class Chunk {
         }
     }
 
-    /**
-     * @param {WebGLRenderingContext} gl
-     * @returns {void}
-     */
-    generate_mesh(gl) {
+    generate_mesh() {
         if (this.ibo !== null) {
             gl.deleteBuffer(this.ibo);
         }
