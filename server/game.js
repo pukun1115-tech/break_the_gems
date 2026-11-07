@@ -96,7 +96,7 @@ export class Game {
         }
 
         const player = Game.players.get(id);
-        if (player !== undefined) {
+        if (player === undefined) {
             return;
         }
 
