@@ -45,15 +45,16 @@ server.on("upgrade", (request, socket, head) => {
     });
 
     socket.on("close", () => {
-        //
+        Game.remove_player(socket);
     });
 
     socket.on("error", (error) => {
         console.log(`error: ${error}`);
+        Game.remove_player(socket);
     });
 
     socket.on("end", () => {
-        //
+        Game.remove_player(socket);
     });
 });
 
