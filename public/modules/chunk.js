@@ -1,3 +1,4 @@
+import { gl } from "./draw.js";
 import { create_ibo, create_vbo } from "./gl_functions.js";
 import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z, BLOCK_TEXTURECOORD } from "./config.js";
 
@@ -23,7 +24,7 @@ export function parse_chunk_key(key) {
 }
 
 export class Chunk {
-    constructor(gl, x, z) {
+    constructor(x, z) {
         this.x = x * CHUNK_SIZE_X;
         this.z = z * CHUNK_SIZE_Z;
         this.map = null;

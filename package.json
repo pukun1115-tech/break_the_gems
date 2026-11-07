@@ -1,0 +1,9 @@
+{
+    "name": "break_the_gems",
+    "version": "0.0.0",
+    "main": "server/main.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server/main.js"
+    }
+}
