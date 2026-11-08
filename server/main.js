@@ -20,8 +20,17 @@ server.on("upgrade", (request, socket, head) => {
     try {
         server_on_upgrade(request, socket);
     } catch (error) {
-        console.log(`error: ${error}`);
+        console.log(`error: ${error}; at server_on_upgrade`);
         return;
+    }
+
+    let cleaned = false;
+    function clean_up() {
+        if (cleaned) {
+            return;
+        }
+        cleaned = true;
+        Game.remove_player(socket);
     }
 
     Game.add_player(socket);
@@ -31,6 +40,7 @@ server.on("upgrade", (request, socket, head) => {
         received_data_buffer = handle_received_buffer(
             socket,
             Buffer.concat([received_data_buffer, head]),
+            Game
         );
     }
 
@@ -40,21 +50,23 @@ server.on("upgrade", (request, socket, head) => {
         }
         received_data_buffer = handle_received_buffer(
             socket,
-            Buffer.concat([received_data_buffer, data])
+            Buffer.concat([received_data_buffer, data]),
+            Game
         );
     });
 
     socket.on("close", () => {
-        Game.remove_player(socket);
+        clean_up();
     });
 
     socket.on("error", (error) => {
         console.log(`error: ${error}`);
-        Game.remove_player(socket);
+        clean_up();
+        socket.destroy();
     });
 
     socket.on("end", () => {
-        Game.remove_player(socket);
+        clean_up();
     });
 });
 

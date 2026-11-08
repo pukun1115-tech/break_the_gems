@@ -54,15 +54,12 @@ try {
     throw new Error("create_texture", { cause: error });
 }
 
-/**
- * @param {WebGLRenderingContext} gl
- * @returns {void}
- */
 function resize_canvas(gl) {
     gl.canvas.width = window.innerWidth;
     gl.canvas.height = window.innerHeight;
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }
+
 window.addEventListener("resize", () => {
     setTimeout(() => {
         resize_canvas(gl);
@@ -81,7 +78,7 @@ const vMatrix = Mat4.identity(Mat4.create());
 const pMatrix = Mat4.identity(Mat4.create());
 const mvpMatrix = Mat4.identity(Mat4.create());
 
-export function draw(player, chunks) {
+export function draw(pos, rot, FOV, chunks) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     Mat4.identity(mMatrix);
@@ -89,11 +86,11 @@ export function draw(player, chunks) {
     Mat4.identity(pMatrix);
     Mat4.identity(mvpMatrix);
 
-    const center = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: deg2rad(player.rot.x), y: deg2rad(player.rot.y), z: deg2rad(player.rot.z) });
-    const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(player.rot.x), y: deg2rad(player.rot.y), z: deg2rad(player.rot.z) });
+    const center = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
+    const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
 
-    Mat4.lookAt(vMatrix, [player.pos.x, player.pos.y + 1.6, player.pos.z], [player.pos.x + center.x, player.pos.y + 1.6 + center.y, player.pos.z + center.z], [up.x, up.y, up.z]);
-    Mat4.perspective(pMatrix, deg2rad(player.FOV), gl.canvas.width / gl.canvas.height, 0.01, 1000);
+    Mat4.lookAt(vMatrix, [pos.x, pos.y + 1.6, pos.z], [pos.x + center.x, pos.y + 1.6 + center.y, pos.z + center.z], [up.x, up.y, up.z]);
+    Mat4.perspective(pMatrix, deg2rad(FOV), canvas.width / canvas.height, 0.01, 1000);
 
     Mat4.multiply(mvpMatrix, pMatrix, vMatrix);
     Mat4.multiply(mvpMatrix, mvpMatrix, mMatrix);

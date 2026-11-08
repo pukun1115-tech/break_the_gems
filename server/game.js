@@ -1,10 +1,13 @@
 import { Chunk, get_chunk_key } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
+import { GRAVITY, PLAYER_MOVE_SPEED, PLAYER_JUMP_HEIGHT } from "./config.js";
+import { check_player_chunk_collision, is_on_ground } from "./collision.js";
+import { deg2rad } from "./rotation.js";
 
 
 export class Game {
     /**
-     * @type {Map<string, { id: string, hp: number, block: number, team: string, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}}>} 
+     * @type {Map<string, { id: string, hp: number, block: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}}>} 
      */
     static players = new Map();
     /**
@@ -30,7 +33,7 @@ export class Game {
         Game.chunks.clear();
         for (let x = 0; x < 2; x++) {
             for (let z = 0; z < 2; z++) {
-                const c = new Chunk();
+                const c = new Chunk(x, z);
                 c.create_map();
                 Game.chunks.set(get_chunk_key(x, z), c);
             }
@@ -50,7 +53,8 @@ export class Game {
             hp: 100,
             block: 10,
             team: t,
-            pos: { x: 0, y: 0, z: 0 },
+            velocity_y: 0,
+            pos: { x: 0, y: 100, z: 0 },
             rot: { x: 0, y: 0, z: 0 }
         };
     }
@@ -91,7 +95,7 @@ export class Game {
     static remove_player(socket) {
         const id = Game.ids_by_socket.get(socket);
         if (id === undefined) {
-            console.log("cannot get id by socket");
+            console.log("cannot get id by socket; at Game.remove_player");
             return;
         }
 
@@ -116,9 +120,74 @@ export class Game {
     }
 
     static update() {
+        const delta_time = 1 / 60;
         for (const id of Game.players.keys()) {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
+            if (!input || !player) {
+                continue;
+            }
+
+            //WASD
+            const cosy = Math.cos(deg2rad(player.rot.y));
+            const siny = Math.sin(deg2rad(player.rot.y));
+
+            let next_x = player.pos.x;
+            let next_y = player.pos.y;
+            let next_z = player.pos.z;
+
+            if (input.key_inputs["KeyW"] === true) {
+                next_x += PLAYER_MOVE_SPEED * delta_time * siny;
+                next_z += PLAYER_MOVE_SPEED * delta_time * cosy;
+            }
+            if (input.key_inputs["KeyS"] === true) {
+                next_x += -PLAYER_MOVE_SPEED * delta_time * siny;
+                next_z += -PLAYER_MOVE_SPEED * delta_time * cosy;
+            }
+            if (input.key_inputs["KeyA"] === true) {
+                next_x += PLAYER_MOVE_SPEED * delta_time * cosy;
+                next_z += -PLAYER_MOVE_SPEED * delta_time * siny;
+            }
+            if (input.key_inputs["KeyD"] === true) {
+                next_x += -PLAYER_MOVE_SPEED * delta_time * cosy;
+                next_z += PLAYER_MOVE_SPEED * delta_time * siny;
+            }
+
+            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z)) {
+                player.pos.x = next_x;
+            }
+            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z)) {
+                player.pos.z = next_z;
+            }
+
+            //velocity_y
+            player.velocity_y -= GRAVITY * delta_time;
+
+            if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z)) {
+                player.velocity_y = 0;
+
+                if (input.key_inputs["Space"] === true) {
+                    player.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
+                }
+            }
+
+            next_y = player.pos.y + player.velocity_y * delta_time;
+
+            if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
+                if (player.velocity_y < 0) {
+                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
+                        next_y += 0.005;
+                    }
+                } else {
+                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
+                        next_y -= 0.005;
+                    }
+                }
+
+                player.velocity_y = 0;
+            }
+
+            player.pos.y = next_y;
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
     }
@@ -146,9 +215,9 @@ export class Game {
         if (message.type === "chat") {
             //
         } else if (message.type === "input") {
-            Game.player_inputs.set(id, message.inputs);
+            Game.player_inputs.set(id, message.input);
         } else if (message.type === "rot") {
-            //
+            Game.players.get(id).rot = message.rot;
         } else {
             console.log(`invalid message: unknown message type ${message.type}`);
             console.log(`message: ${message}`);

@@ -1,6 +1,6 @@
 import { WEBSOCKET_PROTOCOL } from "./config.js";
-import { Chunk, get_chunk_key, parse_chunk_key } from "./chunk.js";
-import { player_update, get_player } from "./player.js";
+import { Chunk, parse_chunk_key } from "./chunk.js";
+import { player_update, get_local_player } from "./player.js";
 import { draw, canvas } from "./draw.js";
 
 const socket = new WebSocket(`${WEBSOCKET_PROTOCOL}//${window.location.host}`);
@@ -21,134 +21,177 @@ const mouse_inputs = {
     right_click: false
 };
 
+window.addEventListener("beforeunload", () => {
+    socket.close();
+});
+
+socket.addEventListener("close", (event) => {
+    console.log("disconnected from server");
+    console.log(`code: ${event.code}`);
+    console.log(`reason: ${event.reason}`);
+});
+
+socket.addEventListener("error", (error) => {
+    console.log(`error: ${error}`);
+});
+
+socket.addEventListener("message", (event) => {
+    let data = null;
+    try {
+        data = JSON.parse(event.data);
+    } catch (error) {
+        console.log(`error: ${error}`);
+        console.log(`data: ${event.data}`);
+        return;
+    }
+
+    if (data.type === null || data.type === undefined) {
+        console.log("invalid message: missing type");
+        console.log(`message: ${event.data}`);
+        return;
+    }
+
+    if (data.type === "init") {
+        id = data.id;
+        for (const p of data.players) {
+            players.set(p.id, p);
+        }
+        team_point = data.team_point;
+        for (const chunk_key of Object.keys(data.chunks)) {
+            const { x: pos_x, z: pos_z } = parse_chunk_key(chunk_key);
+            const c = new Chunk(pos_x, pos_z);
+            c.set_map(data.chunks[chunk_key]);
+            c.generate_mesh();
+            chunks.set(chunk_key, c);
+        }
+    } else if (data.type === "player_joined") {
+        console.log(`${data.id} joined the game`);
+    } else if (data.type === "player_left") {
+        console.log(`${data.id} left the game`);
+    } else if (data.type === "update_players") {
+        players.clear();
+        for (const p of data.players) {
+            players.set(p.id, p);
+        }
+    } else if (data.type === "update_map") {
+        chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block_type;
+        chunks.get(data.chunk_key).generate_mesh();
+    }
+});
+
+canvas.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+});
+
+window.addEventListener("keydown", (event) => {
+    key_inputs[event.code] = true;
+});
+window.addEventListener("keyup", (event) => {
+    key_inputs[event.code] = false;
+});
+
+document.addEventListener("pointerlockchange", () => {
+    if (document.pointerLockElement !== canvas) {
+        for (const key of Object.keys(key_inputs)) {
+            key_inputs[key] = false;
+        }
+        mouse_inputs.left_click = false;
+        mouse_inputs.right_click = false;
+    }
+});
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        document.exitPointerLock();
+    }
+});
+document.addEventListener("blur", () => {
+    document.exitPointerLock();
+});
+canvas.addEventListener("click", () => {
+    canvas.requestPointerLock();
+});
+
+canvas.addEventListener("mousedown", (event) => {
+    if (document.pointerLockElement !== canvas) {
+        return;
+    }
+
+    if (event.button === 0) {
+        mouse_inputs.left_click = true;
+    }
+    if (event.button === 2) {
+        mouse_inputs.right_click = true;
+    }
+});
+
+canvas.addEventListener("mouseup", (event) => {
+    if (document.pointerLockElement !== canvas) {
+        return;
+    }
+
+    if (event.button === 0) {
+        mouse_inputs.left_click = false;
+    }
+    if (event.button === 2) {
+        mouse_inputs.right_click = false;
+    }
+});
+
+
+canvas.addEventListener("mousemove", (event) => {
+    if (document.pointerLockElement !== canvas) {
+        return;
+    }
+
+    mouse_inputs.movement_x += event.movementX;
+    mouse_inputs.movement_y += event.movementY;
+});
+
+function send_input() {
+    socket.send(JSON.stringify({
+        type: "input",
+        input: {
+            key_inputs: key_inputs,
+            mouse_inputs: {
+                left_click: mouse_inputs.left_click,
+                right_click: mouse_inputs.right_click
+            }
+        }
+    }));
+}
+
+function send_rot(player) {
+    socket.send(JSON.stringify({
+        type: "rot",
+        rot: {
+            x: player.rot.x,
+            y: player.rot.y,
+            z: player.rot.z
+        }
+    }));
+}
+
 function main_loop(current_time, last_time) {
-    //delta_time 1フレーム何秒か
-    const delta_time = (current_time - last_time) / 1000;
-    //操作
-    player_update(chunks, mouse_inputs, key_inputs, delta_time);
-    mouse_inputs.movement_x = 0;
-    mouse_inputs.movement_y = 0;
-    const player = get_player();
-    //gldraw
-    draw(player, chunks);
+    if (id !== null) {
+        //delta_time 1フレーム何秒か
+        const delta_time = (current_time - last_time) / 1000;
+        //game update
+        player_update(mouse_inputs, key_inputs);
+        mouse_inputs.movement_x = 0;
+        mouse_inputs.movement_y = 0;
+        //send
+        send_input();
+        send_rot(get_local_player());
+        //draw
+        const pos = players.get(id).pos;
+        const rot = get_local_player().rot;
+        const FOV = get_local_player().FOV;
+        draw(pos, rot, FOV, chunks);
+    }
 
     window.requestAnimationFrame((next) => { main_loop(next, current_time); });
 }
 
-function init() {
-    canvas.addEventListener("contextmenu", (event) => {
-        event.preventDefault();
-    });
-
-    window.addEventListener("keydown", (event) => {
-        key_inputs[event.code] = true;
-    });
-    window.addEventListener("keyup", (event) => {
-        key_inputs[event.code] = false;
-    });
-
-    document.addEventListener("pointerlockchange", () => {
-        if (document.pointerLockElement !== canvas) {
-            for (const key of Object.keys(key_inputs)) {
-                key_inputs[key] = false;
-            }
-            mouse_inputs.left_click = false;
-            mouse_inputs.right_click = false;
-        }
-    });
-    canvas.addEventListener("click", () => {
-        canvas.requestPointerLock();
-    });
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            document.exitPointerLock();
-        }
-    });
-    document.addEventListener("blur", () => {
-        document.exitPointerLock();
-    });
-
-    canvas.addEventListener("mousedown", (event) => {
-        if (document.pointerLockElement !== canvas) {
-            return;
-        }
-
-        if (event.button === 0) {
-            mouse_inputs.left_click = true;
-        }
-        if (event.button === 2) {
-            mouse_inputs.right_click = true;
-        }
-    });
-
-    canvas.addEventListener("mouseup", (event) => {
-        if (document.pointerLockElement !== canvas) {
-            return;
-        }
-
-        if (event.button === 0) {
-            mouse_inputs.left_click = false;
-        }
-        if (event.button === 2) {
-            mouse_inputs.right_click = false;
-        }
-    });
-
-
-    canvas.addEventListener("mousemove", (event) => {
-        if (document.pointerLockElement !== canvas) {
-            return;
-        }
-
-        mouse_inputs.movement_x += event.movementX;
-        mouse_inputs.movement_y += event.movementY;
-    });
-
-    socket.addEventListener("message", (event) => {
-        let data = null;
-        try {
-        data = JSON.parse(event.data);
-        } catch (error) {
-            console.log(`error: ${error}`);
-            console.log(`data: ${event.data}`);
-            return;
-        }
-        
-        if (data.type === null || data.type === undefined) {
-            console.log("invalid message: missing type");
-            console.log(`message: ${event.data}`);
-            return;
-        }
-
-        if (data.type === "init") {
-            id = data.id;
-            players = data.players;
-            team_point = data.team_point;
-            for (const chunk_key of Object.keys(data.chunks)) {
-                const { x: pos_x, z: pos_z } = parse_chunk_key(chunk_key);
-                const c = new Chunk(pos_x, pos_z);
-                c.set_map(data.chunks[chunk_key]);
-                c.generate_mesh();
-                chunks.set(chunk_key, c);
-            }
-        } else if (data.type === "player_joined") {
-            console.log(`${data.id} joined the game`);
-        } else if (data.type === "player_left") {
-            console.log(`${data.id} left the game`);
-        }
-    });
-
-    /*
-    for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-            chunks.set(get_chunk_key(i, j), new Chunk(i, j));
-        }
-    }
-    */
-
-    window.requestAnimationFrame((next) => {
-        main_loop(next, next);
-    });
-}
-
-init();
+window.requestAnimationFrame((next) => {
+    main_loop(next, next);
+});

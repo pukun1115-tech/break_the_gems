@@ -4,10 +4,6 @@ export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
 
-export const GRAVITY = 20;
-export const PLAYER_MOVE_SPEED = 4;
-export const PLAYER_JUMP_HEIGHT = 1.25;
-
 export const MOUSE_SENSITIVITY = 0.05;
 
 const TEXTURE_SIZE = 16;

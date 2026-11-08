@@ -25,6 +25,7 @@ export class Chunk {
     constructor(x, z) {
         this.x = x * CHUNK_SIZE_X;
         this.z = z * CHUNK_SIZE_Z;
+        /** @type {Array<Array<Array<number>>> | null} */
         this.map = null;
     }
 

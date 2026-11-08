@@ -41,3 +41,7 @@ export const MAX_BUFFER_SIZE = 512 * 512;
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
+
+export const GRAVITY = 20;
+export const PLAYER_MOVE_SPEED = 4;
+export const PLAYER_JUMP_HEIGHT = 1.25;

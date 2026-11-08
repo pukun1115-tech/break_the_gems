@@ -5,7 +5,6 @@ import {
     PONG_OPCODE,
     MAX_BUFFER_SIZE
 } from "../config.js";
-import { Game } from "../game.js";
 
 
 export function send_text_frame(socket, text) {
@@ -211,7 +210,7 @@ export function extract_frame(buffer) {
     };
 }
 
-export function handle_received_buffer(socket, buffer) {
+export function handle_received_buffer(socket, buffer, Game) {
     if (buffer.length > MAX_BUFFER_SIZE) {
         socket.destroy();
         return null;
