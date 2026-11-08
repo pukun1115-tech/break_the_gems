@@ -8,7 +8,8 @@ export const CHUNK_SIZE_Z = 16;
 
 export const MOUSE_SENSITIVITY = 0.05;
 
-const TEXTURE_SIZE = 32;
+export const BLOCK_TEXTURE_SIZE = 32;
+export const PLAYER_TEXTURE_SIZE = 64;
 
 /**
  * @param {Array<number>} coords
@@ -16,7 +17,7 @@ const TEXTURE_SIZE = 32;
  */
 export function scale_UV(coords) {
     return coords.map((x) => {
-        return x / TEXTURE_SIZE;
+        return x / BLOCK_TEXTURE_SIZE;
     });
 }
 function createBlockUV({ top, bottom = top, front = top, back = front, right = back, left = right }) {
