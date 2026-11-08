@@ -28,6 +28,9 @@ export const PUBLIC_FILES = [
     "/style.css"
 ];
 
+//
+export const FPS = 50;
+
 //WebSocket
 export const MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
@@ -46,3 +49,5 @@ export const CHUNK_SIZE_Z = 16;
 export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
 export const PLAYER_JUMP_HEIGHT = 1.25;
+
+export const HIT_COOLDOWN = 5;

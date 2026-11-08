@@ -1,3 +1,4 @@
+import { scale_UV } from "./config.js";
 export const player_mesh_index = new Uint16Array([
     0, 1, 2,
     0, 2, 3,
@@ -74,3 +75,5 @@ export const player_mesh_texture_coord = new Float32Array([
     0.5, 0.25,
     0.25, 0.25
 ]);
+
+export const player_mesh_stage = new Float32Array(24).fill(8);

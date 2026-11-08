@@ -1,14 +1,15 @@
 import { Chunk, get_chunk_key } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
-import { GRAVITY, PLAYER_MOVE_SPEED, PLAYER_JUMP_HEIGHT } from "./config.js";
+import { FPS, GRAVITY, PLAYER_MOVE_SPEED, PLAYER_JUMP_HEIGHT, HIT_COOLDOWN } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { break_block, place_block } from "./break_place_block.js";
 
 
 export class Game {
+    static time = 0;
     /**
-     * @type {Map<string, { id: string, hp: number, block: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}}>} 
+     * @type {Map<string, { id: string, hp: number, block: number, hit_time: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}}>} 
      */
     static players = new Map();
     /**
@@ -53,6 +54,7 @@ export class Game {
             id: id,
             hp: 100,
             block: 10,
+            hit_time: Game.time - HIT_COOLDOWN,
             team: t,
             velocity_y: 0,
             pos: { x: 0, y: 100, z: 0 },
@@ -121,7 +123,8 @@ export class Game {
     }
 
     static update() {
-        const delta_time = 1 / 60;
+        const delta_time = 1 / FPS;
+        this.time++;
         for (const id of Game.players.keys()) {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
@@ -192,15 +195,19 @@ export class Game {
 
             //break and place block
             if (input.mouse_inputs.left_click) {
-                const result = break_block(Game.chunks, player);
-                if (result !== null) {
-                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: { type: 0, stage: 0 } }));
+                if (player.hit_time + HIT_COOLDOWN <= Game.time) {
+                    player.hit_time = Game.time;
+                    const result = break_block(Game.chunks, player);
+                    if (result !== null) {
+                        Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
+                        player.hit_time = Game.time;
+                    }
                 }
             }
             if (input.mouse_inputs.right_click) {
                 const result = place_block(Game.chunks, Game.players.values(), player, 3);
                 if (result !== null) {
-                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: { type: 3, stage: 0 } }));
+                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
                 }
             }
         }

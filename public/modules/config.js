@@ -1,5 +1,7 @@
 export const WEBSOCKET_PROTOCOL = (window.location.protocol === "https:" ? "wss:" : "ws:");
 
+export const FPS = 50;
+
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
@@ -12,19 +14,19 @@ const TEXTURE_SIZE = 32;
  * @param {Array<number>} coords
  * @returns {Array<number>}
  */
-function scaleUV(coords) {
+export function scale_UV(coords) {
     return coords.map((x) => {
         return x / TEXTURE_SIZE;
     });
 }
 function createBlockUV({ top, bottom = top, front = top, back = front, right = back, left = right }) {
     return {
-        "top": scaleUV(top),
-        "bottom": scaleUV(bottom),
-        "front": scaleUV(front),
-        "back": scaleUV(back),
-        "right": scaleUV(right),
-        "left": scaleUV(left)
+        "top": scale_UV(top),
+        "bottom": scale_UV(bottom),
+        "front": scale_UV(front),
+        "back": scale_UV(back),
+        "right": scale_UV(right),
+        "left": scale_UV(left)
     };
 }
 

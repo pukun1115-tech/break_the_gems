@@ -55,14 +55,12 @@ export class Chunk {
         }
         this.index_count = 0;
         let index_offset = 0;
-        /** @type {Array<number>} */
         let pos = [];
-        /** @type {Array<number>} */
         let idx = [];
-        /** @type {Array<number>} */
         let tex_coord = [];
-        /** @type {Array<number>} */
         let col = [];
+        let st = [];
+
 
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
@@ -72,6 +70,8 @@ export class Chunk {
                     }
                     const world_X = x + this.x;
                     const world_z = z + this.z;
+
+                    const stage = this.map[x][y][z].stage;
 
                     if (this.isAir(x, y, z + 1)) {
                         pos.push(world_X, y, world_z + 1);
@@ -90,6 +90,11 @@ export class Chunk {
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
+
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
                     }
 
                     if (this.isAir(x, y, z - 1)) {
@@ -109,6 +114,11 @@ export class Chunk {
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
+
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
                     }
 
                     if (this.isAir(x + 1, y, z)) {
@@ -128,6 +138,11 @@ export class Chunk {
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
+
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
                     }
 
                     if (this.isAir(x - 1, y, z)) {
@@ -147,6 +162,11 @@ export class Chunk {
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
+
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
                     }
 
                     if (this.isAir(x, y + 1, z)) {
@@ -166,6 +186,11 @@ export class Chunk {
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
+
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
                     }
 
                     if (this.isAir(x, y - 1, z)) {
@@ -185,6 +210,11 @@ export class Chunk {
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
+
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
+                        st.push(stage);
                     }
                 }
             }
@@ -198,7 +228,13 @@ export class Chunk {
         this.position_vbo = create_vbo(gl, pos);
         this.color_vbo = create_vbo(gl, col);
         this.texture_coord_vbo = create_vbo(gl, tex_coord);
-        if (this.position_vbo === null || this.color_vbo === null || this.texture_coord_vbo === null) {
+        this.stage_vbo = create_vbo(gl, st);
+        if (
+            this.position_vbo === null ||
+            this.color_vbo === null ||
+            this.texture_coord_vbo === null ||
+            this.stage_vbo === null
+        ) {
             throw new Error("create_vbo");
         }
     }

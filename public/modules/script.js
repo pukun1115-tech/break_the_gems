@@ -1,4 +1,4 @@
-import { WEBSOCKET_PROTOCOL } from "./config.js";
+import { FPS, WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
 import { player_update, get_local_player } from "./player.js";
 import { draw, canvas } from "./draw.js";
@@ -171,10 +171,8 @@ function send_rot(player) {
     }));
 }
 
-function main_loop(current_time, last_time) {
+function main_loop() {
     if (id !== null) {
-        //delta_time 1フレーム何秒か
-        const delta_time = (current_time - last_time) / 1000;
         //game update
         player_update(mouse_inputs, key_inputs);
         mouse_inputs.movement_x = 0;
@@ -189,9 +187,9 @@ function main_loop(current_time, last_time) {
         draw(pos, rot, FOV, chunks, players.values(), id);
     }
 
-    window.requestAnimationFrame((next) => { main_loop(next, current_time); });
+    setTimeout(() => {
+        main_loop();
+    }, 1000 / FPS);
 }
 
-window.requestAnimationFrame((next) => {
-    main_loop(next, next);
-});
+main_loop();

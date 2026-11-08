@@ -15,7 +15,13 @@ import {
 } from "./gl_functions.js";
 import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Mat4 } from "./matrix.js";
-import { player_mesh_color, player_mesh_index, player_mesh_position, player_mesh_texture_coord } from "./player_mesh.js";
+import {
+    player_mesh_color,
+    player_mesh_index,
+    player_mesh_position,
+    player_mesh_texture_coord,
+    player_mesh_stage
+} from "./player_mesh.js";
 
 /** @type {HTMLCanvasElement} */
 export const canvas = document.getElementById("canvas");
@@ -86,13 +92,15 @@ const player_ibo = create_ibo(gl, player_mesh_index);
 const player_position_vbo = create_vbo(gl, player_mesh_position);
 const player_color_vbo = create_vbo(gl, player_mesh_color);
 const player_texture_coord_vbo = create_vbo(gl, player_mesh_texture_coord);
+const player_stage_vbo = create_vbo(gl, player_mesh_stage);
 
 function draw_chunks(chunks) {
     for (const c of chunks.values()) {
         set_attribute(gl, {
             "position": c.position_vbo,
             "color": c.color_vbo,
-            "texture_coord": c.texture_coord_vbo
+            "texture_coord": c.texture_coord_vbo,
+            "stage": c.stage_vbo
         }, attribute_locations, attribute_strides);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, c.ibo);
 
@@ -108,7 +116,8 @@ function draw_players(players, id) {
     set_attribute(gl, {
         "position": player_position_vbo,
         "color": player_color_vbo,
-        "texture_coord": player_texture_coord_vbo
+        "texture_coord": player_texture_coord_vbo,
+        "stage": player_stage_vbo
     }, attribute_locations, attribute_strides);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, player_ibo);
 

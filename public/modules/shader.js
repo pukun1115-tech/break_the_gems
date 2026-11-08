@@ -3,15 +3,18 @@ export const vertex_shader_source = `
     attribute vec3 position;
     attribute vec4 color;
     attribute vec2 texture_coord;
+    attribute float stage;
 
     uniform mat4 mvp_matrix;
 
     varying vec4 v_color;
     varying vec2 v_texture_coord;
+    varying float v_stage;
 
     void main(void) {
         v_color = color;
         v_texture_coord = texture_coord;
+        v_stage = stage;
         gl_Position = mvp_matrix * vec4(position, 1.0);
     }
 `;
@@ -24,9 +27,15 @@ export const fragment_shader_source = `
 
     varying vec4 v_color;
     varying vec2 v_texture_coord;
+    varying float v_stage;
 
     void main(void) {
-        gl_FragColor = v_color * texture2D(texture, v_texture_coord);
+        vec4 tex_color = texture2D(texture, v_texture_coord);
+        float whiteness = clamp((8.0 - v_stage) / 8.0, 0.0, 1.0);
+        gl_FragColor = vec4(
+            mix(tex_color.rgb, vec3(1.0), whiteness),
+            tex_color.a
+        );
     }
 `;
 
@@ -40,6 +49,7 @@ export function get_attribute_locations(gl, prg) {
         "position": gl.getAttribLocation(prg, "position"),
         "color": gl.getAttribLocation(prg, "color"),
         "texture_coord": gl.getAttribLocation(prg, "texture_coord"),
+        "stage": gl.getAttribLocation(prg, "stage")
     };
 }
 
@@ -51,6 +61,7 @@ export function get_attribute_strides() {
         "position": 3,
         "color": 4,
         "texture_coord": 2,
+        "stage": 1,
     };
 }
 
