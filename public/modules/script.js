@@ -74,7 +74,7 @@ socket.addEventListener("message", (event) => {
             players.set(p.id, p);
         }
     } else if (data.type === "update_map") {
-        chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block_type;
+        chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block;
         chunks.get(data.chunk_key).generate_mesh();
     }
 });

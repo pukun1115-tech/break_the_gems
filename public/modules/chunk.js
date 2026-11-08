@@ -84,7 +84,7 @@ export class Chunk {
                         index_offset += 4;
                         this.index_count += 6;
 
-                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z]]["front"]);
+                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z].type]["front"]);
 
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
@@ -103,7 +103,7 @@ export class Chunk {
                         index_offset += 4;
                         this.index_count += 6;
 
-                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z]]["back"]);
+                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z].type]["back"]);
 
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
@@ -122,7 +122,7 @@ export class Chunk {
                         index_offset += 4;
                         this.index_count += 6;
 
-                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z]]["right"]);
+                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z].type]["right"]);
 
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
@@ -141,7 +141,7 @@ export class Chunk {
                         index_offset += 4;
                         this.index_count += 6;
 
-                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z]]["left"]);
+                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z].type]["left"]);
 
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
@@ -160,7 +160,7 @@ export class Chunk {
                         index_offset += 4;
                         this.index_count += 6;
 
-                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z]]["top"]);
+                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z].type]["top"]);
 
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
@@ -179,7 +179,7 @@ export class Chunk {
                         index_offset += 4;
                         this.index_count += 6;
 
-                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z]]["bottom"]);
+                        tex_coord.push(...BLOCK_TEXTURECOORD[this.map[x][y][z].type]["bottom"]);
 
                         col.push(1, 1, 1, 1);
                         col.push(1, 1, 1, 1);
@@ -207,6 +207,6 @@ export class Chunk {
         if (x < 0 || y < 0 || z < 0 || x >= CHUNK_SIZE_X || y >= CHUNK_SIZE_Y || z >= CHUNK_SIZE_Z) {
             return true;
         }
-        return (this.map[x][y][z] === 0);
+        return (this.map[x][y][z].type === 0);
     }
 }

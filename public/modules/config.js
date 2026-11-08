@@ -6,7 +6,7 @@ export const CHUNK_SIZE_Z = 16;
 
 export const MOUSE_SENSITIVITY = 0.05;
 
-const TEXTURE_SIZE = 16;
+const TEXTURE_SIZE = 32;
 
 /**
  * @param {Array<number>} coords
@@ -39,42 +39,42 @@ export const BLOCK_TYPES = {
 export const BLOCK_TEXTURECOORD = {
     1: createBlockUV({
         "top": [
-            0, 4,
-            4, 4,
-            4, 0,
-            0, 0
+            1, 7,
+            7, 7,
+            7, 1,
+            1, 1
         ]
     }),
     2: createBlockUV({
         "top": [
-            4, 4,
-            8, 4,
-            8, 0,
-            4, 0
+            9, 7,
+            15, 7,
+            15, 1,
+            9, 1
         ]
     }),
     3: createBlockUV({
         "top": [
-            8, 4,
-            12, 4,
-            12, 0,
-            8, 0
+            17, 7,
+            23, 7,
+            23, 1,
+            17, 1
         ]
     }),
     4: createBlockUV({
         "top": [
-            12, 4,
-            16, 4,
-            16, 0,
-            12, 0
+            25, 7,
+            31, 7,
+            31, 1,
+            25, 1
         ]
     }),
     5: createBlockUV({
         "top": [
-            0, 8,
-            4, 8,
-            4, 4,
-            0, 4
+            1, 15,
+            7, 15,
+            7, 9,
+            1, 9
         ]
     })
 };

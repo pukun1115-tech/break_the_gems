@@ -73,7 +73,7 @@ resize_canvas(gl);
 gl.enable(gl.DEPTH_TEST);
 gl.enable(gl.CULL_FACE);
 gl.frontFace(gl.CCW);
-gl.clearColor(0.0, 0.0, 0.0, 1.0);
+gl.clearColor(0.5, 0.5, 1.0, 1.0);
 gl.clearDepth(1.0);
 
 const m_matrix = Mat4.identity(Mat4.create());

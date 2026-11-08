@@ -194,13 +194,13 @@ export class Game {
             if (input.mouse_inputs.left_click) {
                 const result = break_block(Game.chunks, player);
                 if (result !== null) {
-                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block_type: 0 }));
+                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: { type: 0, stage: 0 } }));
                 }
             }
             if (input.mouse_inputs.right_click) {
-                const result = place_block(Game.chunks, Game.players.values(), player, 5);
+                const result = place_block(Game.chunks, Game.players.values(), player, 3);
                 if (result !== null) {
-                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block_type: 5 }));
+                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: { type: 3, stage: 0 } }));
                 }
             }
         }

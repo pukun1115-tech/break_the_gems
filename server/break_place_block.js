@@ -44,11 +44,11 @@ export function break_block(chunks, player) {
         if (local_y < 0 || local_y >= CHUNK_SIZE_Y) {
             continue;
         }
-        if (target_chunk.map[local_x][local_y][local_z] === 0) {
+        if (target_chunk.map[local_x][local_y][local_z].type === 0) {
             continue;
         }
 
-        target_chunk.map[local_x][local_y][local_z] = 0;
+        target_chunk.map[local_x][local_y][local_z].type = 0;
         return { chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z } };
     }
     return null;
@@ -97,7 +97,7 @@ export function place_block(chunks, players, player, type) {
         if (
             hit_local_y >= 0 &&
             hit_local_y < CHUNK_SIZE_Y &&
-            hit_chunk.map[hit_local_x][hit_local_y][hit_local_z] !== 0
+            hit_chunk.map[hit_local_x][hit_local_y][hit_local_z].type !== 0
         ) {
             if (previous_x === null || previous_y === null || previous_z === null) {
                 break;
@@ -117,15 +117,15 @@ export function place_block(chunks, players, player, type) {
             if (place_local_y < 0 || place_local_y >= CHUNK_SIZE_Y) {
                 break;
             }
-            if (place_chunk.map[place_local_x][place_local_y][place_local_z] !== 0) {
+            if (place_chunk.map[place_local_x][place_local_y][place_local_z].type !== 0) {
                 break;
             }
 
-            place_chunk.map[place_local_x][place_local_y][place_local_z] = type;
+            place_chunk.map[place_local_x][place_local_y][place_local_z].type = type;
             let hit = false;
             for (const p of players) {
                 if (check_player_chunk_collision(chunks, p.pos.x, p.pos.y, p.pos.z)) {
-                    place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
+                    place_chunk.map[place_local_x][place_local_y][place_local_z].type = 0;
                     hit = true;
                     break;
                 }

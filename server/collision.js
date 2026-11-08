@@ -27,7 +27,7 @@ export function check_player_chunk_collision(chunks, px, py, pz) {
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
                 for (let z = 0; z < CHUNK_SIZE_Z; z++) {
-                    if (c.map[x][y][z] === 0) {
+                    if (c.map[x][y][z].type === 0) {
                         continue;
                     }
 

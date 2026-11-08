@@ -25,7 +25,7 @@ export class Chunk {
     constructor(x, z) {
         this.x = x * CHUNK_SIZE_X;
         this.z = z * CHUNK_SIZE_Z;
-        /** @type {Array<Array<Array<number>>> | null} */
+        /** @type {Array<Array<Array<{ type: number, stage: number}>>> | null} */
         this.map = null;
     }
 
@@ -34,7 +34,7 @@ export class Chunk {
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             this.map[x] = new Array(CHUNK_SIZE_Y);
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                this.map[x][y] = new Array(CHUNK_SIZE_Z).fill(2);
+                this.map[x][y] = Array.from({ length: CHUNK_SIZE_Z }, () => ({ type: 2, stage: 0 }));
             }
         }
     }
