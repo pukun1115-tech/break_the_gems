@@ -1,6 +1,6 @@
 export const WEBSOCKET_PROTOCOL = (window.location.protocol === "https:" ? "wss:" : "ws:");
 
-export const FPS = 50;
+export const FPS = 60;
 
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
