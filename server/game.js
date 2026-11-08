@@ -3,6 +3,7 @@ import { send_text_frame } from "./connection/socket.js";
 import { GRAVITY, PLAYER_MOVE_SPEED, PLAYER_JUMP_HEIGHT } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
+import { break_block, place_block } from "./break_place_block.js";
 
 
 export class Game {
@@ -188,6 +189,20 @@ export class Game {
             }
 
             player.pos.y = next_y;
+
+            //break and place block
+            if (input.mouse_inputs.left_click) {
+                const result = break_block(Game.chunks, player);
+                if (result !== null) {
+                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block_type: 0 }));
+                }
+            }
+            if (input.mouse_inputs.right_click) {
+                const result = place_block(Game.chunks, player, 5);
+                if (result !== null) {
+                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block_type: 5 }));
+                }
+            }
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
     }

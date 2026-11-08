@@ -1,14 +1,15 @@
-import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z } from "./config";
-import { deg2rad, rotate_vector_XYZ } from "./rotation";
-import { Chunk, get_chunk_key } from "./chunk";
-import { check_player_chunk_collision } from "./collision";
+import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z } from "./config.js";
+import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
+import { Chunk, get_chunk_key } from "./chunk.js";
+import { check_player_chunk_collision } from "./collision.js";
 
 
 /**
  * @param {Map<string, Chunk>} chunks
- * @returns {void}
+ * @param {{pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
+ * @returns {{ chunk_key: string, pos: { x: number, y: number, z: number } } | null}
  */
-export function break_block(chunks) {
+export function break_block(chunks, player) {
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -29,8 +30,9 @@ export function break_block(chunks) {
 
         const chunk_x = Math.floor(world_x / CHUNK_SIZE_X);
         const chunk_z = Math.floor(world_z / CHUNK_SIZE_Z);
+        const chunk_key = get_chunk_key(chunk_x, chunk_z);
 
-        const target_chunk = chunks.get(get_chunk_key(chunk_x, chunk_z));
+        const target_chunk = chunks.get(chunk_key);
         if (target_chunk === undefined) {
             continue;
         }
@@ -47,16 +49,18 @@ export function break_block(chunks) {
         }
 
         target_chunk.map[local_x][local_y][local_z] = 0;
-        break;
+        return { chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z } };
     }
+    return null;
 }
 
 /**
  * @param {Map<string, Chunk>} chunks
+ * @param {{pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
  * @param {number} type
- * @returns {void}
+ * @returns {{ chunk_key: string, pos: { x: number, y: number, z: number } } | null}
  */
-function place_block(chunks, type) {
+export function place_block(chunks, player, type) {
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -99,7 +103,9 @@ function place_block(chunks, type) {
             }
             const place_chunk_x = Math.floor(previous_x / CHUNK_SIZE_X);
             const place_chunk_z = Math.floor(previous_z / CHUNK_SIZE_Z);
-            const place_chunk = chunks.get(get_chunk_key(place_chunk_x, place_chunk_z));
+            const chunk_key = get_chunk_key(place_chunk_x, place_chunk_z);
+
+            const place_chunk = chunks.get(chunk_key);
             if (place_chunk === undefined) {
                 break;
             }
@@ -119,10 +125,11 @@ function place_block(chunks, type) {
                 place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
                 break;
             }
-            break;
+            return { chunk_key: chunk_key, pos: { x: place_local_x, y: place_local_y, z: place_local_z } };
         }
         previous_x = hit_block_x;
         previous_y = hit_block_y;
         previous_z = hit_block_z;
     }
+    return null;
 }
