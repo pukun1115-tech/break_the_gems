@@ -29,7 +29,7 @@ export const PUBLIC_FILES = [
 ];
 
 //
-export const FPS = 50;
+export const FPS = 60;
 
 //WebSocket
 export const MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
