@@ -27,14 +27,4 @@ export function player_update(mouse_inputs, key_inputs) {
     if (key_inputs["KeyM"] === true) {
         local_player.FOV = Math.max(5, local_player.FOV - 1);
     }
-
-    /*
-    //break and place block
-    if (mouse_inputs.left_click === true) {
-        break_block(gl, chunks);
-    }
-    if (mouse_inputs.right_click === true) {
-        place_block(gl, chunks, 1);
-    }
-    */
 }

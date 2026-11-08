@@ -186,7 +186,7 @@ function main_loop(current_time, last_time) {
         const pos = players.get(id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        draw(pos, rot, FOV, chunks);
+        draw(pos, rot, FOV, chunks, players.values(), id);
     }
 
     window.requestAnimationFrame((next) => { main_loop(next, current_time); });

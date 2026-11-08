@@ -16,14 +16,15 @@ export const PUBLIC_FILES = [
     "/images/texture.png",
     "/modules/chunk.js",
     "/modules/config.js",
+    "/modules/draw.js",
     "/modules/gl_functions.js",
-    "/index.html",
     "/modules/matrix.js",
+    "/modules/player_mesh.js",
     "/modules/player.js",
     "/modules/rotation.js",
     "/modules/script.js",
     "/modules/shader.js",
-    "/modules/draw.js",
+    "/index.html",
     "/style.css"
 ];
 

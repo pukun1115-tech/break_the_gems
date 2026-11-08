@@ -56,11 +56,12 @@ export function break_block(chunks, player) {
 
 /**
  * @param {Map<string, Chunk>} chunks
+ * @param {any} players
  * @param {{pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
  * @param {number} type
  * @returns {{ chunk_key: string, pos: { x: number, y: number, z: number } } | null}
  */
-export function place_block(chunks, player, type) {
+export function place_block(chunks, players, player, type) {
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -121,8 +122,15 @@ export function place_block(chunks, player, type) {
             }
 
             place_chunk.map[place_local_x][place_local_y][place_local_z] = type;
-            if (check_player_chunk_collision(chunks, player.pos.x, player.pos.y, player.pos.z)) {
-                place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
+            let hit = false;
+            for (const p of players) {
+                if (check_player_chunk_collision(chunks, p.pos.x, p.pos.y, p.pos.z)) {
+                    place_chunk.map[place_local_x][place_local_y][place_local_z] = 0;
+                    hit = true;
+                    break;
+                }
+            }
+            if (hit) {
                 break;
             }
             return { chunk_key: chunk_key, pos: { x: place_local_x, y: place_local_y, z: place_local_z } };

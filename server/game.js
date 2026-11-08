@@ -198,7 +198,7 @@ export class Game {
                 }
             }
             if (input.mouse_inputs.right_click) {
-                const result = place_block(Game.chunks, player, 5);
+                const result = place_block(Game.chunks, Game.players.values(), player, 5);
                 if (result !== null) {
                     Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block_type: 5 }));
                 }

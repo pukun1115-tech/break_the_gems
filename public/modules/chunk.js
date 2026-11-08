@@ -93,14 +93,10 @@ export class Chunk {
                     }
 
                     if (this.isAir(x, y, z - 1)) {
-                        pos.push(world_X + 1, y, world_z
-                        );
-                        pos.push(world_X, y, world_z
-                        );
-                        pos.push(world_X, y + 1, world_z
-                        );
-                        pos.push(world_X + 1, y + 1, world_z
-                        );
+                        pos.push(world_X + 1, y, world_z);
+                        pos.push(world_X, y, world_z);
+                        pos.push(world_X, y + 1, world_z);
+                        pos.push(world_X + 1, y + 1, world_z);
 
                         idx.push(index_offset + 0, index_offset + 1, index_offset + 2);
                         idx.push(index_offset + 0, index_offset + 2, index_offset + 3);
@@ -117,10 +113,8 @@ export class Chunk {
 
                     if (this.isAir(x + 1, y, z)) {
                         pos.push(world_X + 1, y, world_z + 1);
-                        pos.push(world_X + 1, y, world_z
-                        );
-                        pos.push(world_X + 1, y + 1, world_z
-                        );
+                        pos.push(world_X + 1, y, world_z);
+                        pos.push(world_X + 1, y + 1, world_z);
                         pos.push(world_X + 1, y + 1, world_z + 1);
 
                         idx.push(index_offset + 0, index_offset + 1, index_offset + 2);
@@ -137,12 +131,10 @@ export class Chunk {
                     }
 
                     if (this.isAir(x - 1, y, z)) {
-                        pos.push(world_X, y, world_z
-                        );
+                        pos.push(world_X, y, world_z);
                         pos.push(world_X, y, world_z + 1);
                         pos.push(world_X, y + 1, world_z + 1);
-                        pos.push(world_X, y + 1, world_z
-                        );
+                        pos.push(world_X, y + 1, world_z);
 
                         idx.push(index_offset + 0, index_offset + 1, index_offset + 2);
                         idx.push(index_offset + 0, index_offset + 2, index_offset + 3);
@@ -160,10 +152,8 @@ export class Chunk {
                     if (this.isAir(x, y + 1, z)) {
                         pos.push(world_X, y + 1, world_z + 1);
                         pos.push(world_X + 1, y + 1, world_z + 1);
-                        pos.push(world_X + 1, y + 1, world_z
-                        );
-                        pos.push(world_X, y + 1, world_z
-                        );
+                        pos.push(world_X + 1, y + 1, world_z);
+                        pos.push(world_X, y + 1, world_z);
 
                         idx.push(index_offset + 0, index_offset + 1, index_offset + 2);
                         idx.push(index_offset + 0, index_offset + 2, index_offset + 3);
@@ -179,10 +169,8 @@ export class Chunk {
                     }
 
                     if (this.isAir(x, y - 1, z)) {
-                        pos.push(world_X, y, world_z
-                        );
-                        pos.push(world_X + 1, y, world_z
-                        );
+                        pos.push(world_X, y, world_z);
+                        pos.push(world_X + 1, y, world_z);
                         pos.push(world_X + 1, y, world_z + 1);
                         pos.push(world_X, y, world_z + 1);
 
