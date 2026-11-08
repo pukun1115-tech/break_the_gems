@@ -132,9 +132,9 @@ function init() {
                 chunks.set(chunk_key, c);
             }
         } else if (data.type === "player_joined") {
-            //
+            console.log(`${data.id} joined the game`);
         } else if (data.type === "player_left") {
-            //
+            console.log(`${data.id} left the game`);
         }
     });
 

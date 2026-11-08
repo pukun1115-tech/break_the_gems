@@ -45,7 +45,7 @@ const uniformLocations = get_uniform_locations(gl, program);
 
 gl.activeTexture(gl.TEXTURE0);
 try {
-    const texture = await create_texture(gl, "./images/texture.png");
+    const texture = await create_texture(gl, "../images/texture.png");
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
