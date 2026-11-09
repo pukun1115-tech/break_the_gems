@@ -207,7 +207,7 @@ export class Game {
                 }
             }
             if (input.mouse_inputs.right_click) {
-                if (player.place_time + PLACE_COOLDOWN <= GAME.time) {
+                if (player.place_time + PLACE_COOLDOWN <= Game.time) {
                     player.place_time = Game.time;
                     const result = place_block(Game.chunks, Game.players.values(), player, 3);
                     if (result !== null) {
