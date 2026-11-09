@@ -21,7 +21,7 @@ export function break_block(chunks, player) {
 
     for (let distance = 0; distance <= max_distance; distance += ray_step) {
         const ray_x = player.pos.x + direction.x * distance;
-        const ray_y = player.pos.y + 1.6 + direction.y * distance;
+        const ray_y = player.pos.y + 1.4 + direction.y * distance;
         const ray_z = player.pos.z + direction.z * distance;
 
         const world_x = Math.floor(ray_x);
@@ -84,7 +84,7 @@ export function place_block(chunks, players, player, type) {
 
     for (let distance = 0; distance <= max_distance; distance += ray_step) {
         const ray_x = player.pos.x + direction.x * distance;
-        const ray_y = player.pos.y + 1.6 + direction.y * distance;
+        const ray_y = player.pos.y + 1.4 + direction.y * distance;
         const ray_z = player.pos.z + direction.z * distance;
 
         const hit_block_x = Math.floor(ray_x);

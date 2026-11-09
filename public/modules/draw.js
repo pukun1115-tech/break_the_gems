@@ -104,6 +104,9 @@ const p_cube_color_vbo = create_vbo(gl, new Float32Array(96).fill(1.0));
 const p_cube_stage_vbo = create_vbo(gl, new Float32Array(24).fill(8));
 
 const player_head_texture_coord_vbo = create_vbo(gl, player_head_texture_coord);
+const player_body_texture_coord_vbo = create_vbo(gl, player_body_texture_coord);
+const player_arm_texture_coord_vbo = create_vbo(gl, player_arm_texture_coord);
+const player_leg_texture_coord_vbo = create_vbo(gl, player_leg_texture_coord);
 
 const m_matrix = Mat4.identity(Mat4.create());
 const v_matrix = Mat4.identity(Mat4.create());
@@ -146,6 +149,8 @@ function draw_players(players, id) {
         if (p.id === id) {
             continue;
         }
+
+
         //head
         set_attribute(gl, {
             "texture_coord": player_head_texture_coord_vbo
@@ -162,12 +167,79 @@ function draw_players(players, id) {
 
         gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
         gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
+
+
         //body
-        /*
         set_attribute(gl, {
-            "texture_coord": 
-        })
-        */
+            "texture_coord": player_body_texture_coord_vbo
+        }, attribute_locations, attribute_strides);
+
+        Mat4.identity(m_matrix);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y / 2, p.pos.z);
+        Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_BODY_X, PLAYER_MESH_BODY_Y, PLAYER_MESH_BODY_Z);
+
+        Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
+        Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
+
+        gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
+        gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
+
+
+        //arm
+        set_attribute(gl, {
+            "texture_coord": player_arm_texture_coord_vbo
+        }, attribute_locations, attribute_strides);
+
+        //left
+        Mat4.identity(m_matrix);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x + PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
+        Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
+
+        Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
+        Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
+
+        gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
+        gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
+
+        //right
+        Mat4.identity(m_matrix);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x - PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
+        Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
+
+        Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
+        Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
+
+        gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
+        gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
+
+
+        //leg
+        set_attribute(gl, {
+            "texture_coord": player_leg_texture_coord_vbo
+        }, attribute_locations, attribute_strides);
+
+        //left
+        Mat4.identity(m_matrix);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x + PLAYER_MESH_LEG_X / 2, p.pos.y + PLAYER_MESH_LEG_Y / 2, p.pos.z);
+        Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
+
+        Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
+        Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
+
+        gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
+        gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
+
+        //right
+
+        Mat4.identity(m_matrix);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x - PLAYER_MESH_LEG_X / 2, p.pos.y + PLAYER_MESH_LEG_Y / 2, p.pos.z);
+        Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
+
+        Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
+        Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
+
+        gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
+        gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
     }
 }
 
@@ -182,7 +254,7 @@ export function draw(pos, rot, FOV, chunks, players, id) {
     const center = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
     const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
 
-    Mat4.lookAt(v_matrix, [pos.x, pos.y + 1.6, pos.z], [pos.x + center.x, pos.y + 1.6 + center.y, pos.z + center.z], [up.x, up.y, up.z]);
+    Mat4.lookAt(v_matrix, [pos.x, pos.y + 1.4, pos.z], [pos.x + center.x, pos.y + 1.4 + center.y, pos.z + center.z], [up.x, up.y, up.z]);
     Mat4.perspective(p_matrix, deg2rad(FOV), canvas.width / canvas.height, 0.01, 1000);
 
     draw_chunks(chunks);

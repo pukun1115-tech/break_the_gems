@@ -11,7 +11,7 @@ import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z } from "./config.js";
 export function check_player_chunk_collision(chunks, px, py, pz) {
     const p_max_x = px + 0.3;
     const p_min_x = px - 0.3;
-    const p_max_y = py + 1.8;
+    const p_max_y = py + 1.6;
     const p_min_y = py;
     const p_max_z = pz + 0.3;
     const p_min_z = pz - 0.3;
