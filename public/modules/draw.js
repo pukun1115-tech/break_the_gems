@@ -52,16 +52,13 @@ const attribute_strides = get_attribute_strides();
 /** @type {Record<string, number>} */
 const uniform_locations = get_uniform_locations(gl, program);
 
-gl.activeTexture(gl.TEXTURE0);
-try {
-    const texture = await create_texture(gl, "../images/block_texture.png");
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
-    gl.uniform1i(uniform_locations["texture"], 0);
-} catch (error) {
-    throw new Error("create_texture", { cause: error });
+const block_texture = create_texture(gl, "../images/block_texture.png");
+const player_texture = create_texture(gl, "../images/player_texture.png");
+if (block_texture === null || player_texture === null) {
+    throw new Error("create_texture");
 }
+gl.activeTexture(gl.TEXTURE0);
+gl.uniform1i(uniform_locations["texture"], 0);
 
 function resize_canvas(gl) {
     gl.canvas.width = window.innerWidth;
@@ -95,6 +92,9 @@ const player_texture_coord_vbo = create_vbo(gl, player_mesh_texture_coord);
 const player_stage_vbo = create_vbo(gl, player_mesh_stage);
 
 function draw_chunks(chunks) {
+    gl.bindTexture(gl.TEXTURE_2D, block_texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
     for (const c of chunks.values()) {
         set_attribute(gl, {
             "position": c.position_vbo,
@@ -113,6 +113,9 @@ function draw_chunks(chunks) {
 }
 
 function draw_players(players, id) {
+    gl.bindTexture(gl.TEXTURE_2D, block_texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
     set_attribute(gl, {
         "position": player_position_vbo,
         "color": player_color_vbo,
