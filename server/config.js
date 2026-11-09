@@ -51,4 +51,5 @@ export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
 export const PLAYER_JUMP_HEIGHT = 1.25;
 
-export const HIT_COOLDOWN = 5;
+export const BREAK_COOLDOWN = 5;
+export const PLACE_COOLDOWN = 5;
