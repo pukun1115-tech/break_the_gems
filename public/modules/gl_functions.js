@@ -117,6 +117,7 @@ export function create_texture(gl, source) {
             if (tex === null) {
                 console.log(new Error("cannot create texture."));
                 resolve(null);
+                return;
             }
 
             gl.bindTexture(gl.TEXTURE_2D, tex);
