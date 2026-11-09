@@ -20,21 +20,6 @@ export const PLAYER_MESH_LEG_X = 0.3;
 export const PLAYER_MESH_LEG_Y = 0.4;
 export const PLAYER_MESH_LEG_Z = 0.3;
 
-export const player_mesh_index = new Uint16Array([
-    0, 1, 2,
-    0, 2, 3,
-    4, 5, 6,
-    4, 6, 7,
-    8, 9, 10,
-    8, 10, 11,
-    12, 13, 14,
-    12, 14, 15,
-    16, 17, 18,
-    16, 18, 19,
-    20, 21, 22,
-    20, 22, 23
-]);
-
 export const cube_mesh_index = new Uint16Array([
     0, 1, 2,
     0, 2, 3,
@@ -50,8 +35,7 @@ export const cube_mesh_index = new Uint16Array([
     20, 22, 23
 ]);
 
-export const cube_mesh_stage = new Float32Array(24).fill(8);
-export const cube_mesh_color = new Float32Array(96).fill(1.0);
+export const cube_mesh_index_count = 36;
 
 export const cube_mesh_position = new Float32Array([
     //front
@@ -84,23 +68,73 @@ export const cube_mesh_position = new Float32Array([
     1, 0, 0,
     1, 0, 1,
     0, 0, 1,
-]);
+].map((x) => {
+    return x - 0.5;
+}));
 
 export const player_body_texture_coord = new Float32Array(scale_player_UV([
     //front
+    31, 9,
+    31, 21,
+    51, 21,
+    51, 9,
     //back
+    31, 9,
+    31, 21,
+    51, 21,
+    51, 9,
     //right
+    31, 1,
+    31, 7,
+    51, 7,
+    51, 1,
     //left
+    31, 1,
+    31, 7,
+    51, 7,
+    51, 1,
     //top
+    53, 9,
+    53, 21,
+    59, 21,
+    59, 9,
     //bottom
+    53, 9,
+    53, 21,
+    59, 21,
+    59, 9,
 ]));
 export const player_head_texture_coord = new Float32Array(scale_player_UV([
     //front
+    1, 9,
+    9, 9,
+    9, 1,
+    1, 1,
     //back
+    11, 9,
+    19, 9,
+    19, 1,
+    11, 1,
     //right
+    11, 9,
+    19, 9,
+    19, 1,
+    11, 1,
     //left
+    11, 9,
+    19, 9,
+    19, 1,
+    11, 1,
     //top
+    1, 19,
+    9, 19,
+    9, 11,
+    1, 11,
     //bottom
+    21, 9,
+    29, 9,
+    29, 1,
+    21, 1
 ]));
 export const player_arm_texture_coord = new Float32Array(scale_player_UV([
     //front
@@ -118,67 +152,3 @@ export const player_leg_texture_coord = new Float32Array(scale_player_UV([
     //top
     //bottom
 ]));
-
-export const player_mesh_position = new Float32Array([
-    //front
-    -0.3, 0, 0.15,
-    0.3, 0, 0.15,
-    0.3, 1.3, 0.15,
-    -0.3, 1.3, 0.15,
-    //back
-    0.3, 0, -0.15,
-    -0.3, 0, -0.15,
-    -0.3, 1.3, -0.15,
-    0.3, 1.3, -0.15,
-    //right
-    0.3, 0, 0.15,
-    0.3, 0, -0.15,
-    0.3, 1.3, -0.15,
-    0.3, 1.3, 0.15,
-    //left
-    -0.3, 0, -0.15,
-    -0.3, 0, 0.15,
-    -0.3, 1.3, 0.15,
-    -0.3, 1.3, -0.15,
-    //top
-    -0.3, 1.3, 0.15,
-    0.3, 1.3, 0.15,
-    0.3, 1.3, -0.15,
-    -0.3, 1.3, -0.15,
-    //bottom
-    -0.3, 0, -0.15,
-    0.3, 0, -0.15,
-    0.3, 0, 0.15,
-    -0.3, 0, 0.15
-]);
-
-export const player_mesh_color = new Float32Array(96).fill(1.0);
-
-export const player_mesh_texture_coord = new Float32Array([
-    0.25, 0.5,
-    0.5, 0.5,
-    0.5, 0.25,
-    0.25, 0.25,
-    0.25, 0.5,
-    0.5, 0.5,
-    0.5, 0.25,
-    0.25, 0.25,
-    0.25, 0.5,
-    0.5, 0.5,
-    0.5, 0.25,
-    0.25, 0.25,
-    0.25, 0.5,
-    0.5, 0.5,
-    0.5, 0.25,
-    0.25, 0.25,
-    0.25, 0.5,
-    0.5, 0.5,
-    0.5, 0.25,
-    0.25, 0.25,
-    0.25, 0.5,
-    0.5, 0.5,
-    0.5, 0.25,
-    0.25, 0.25
-]);
-
-export const player_mesh_stage = new Float32Array(24).fill(8);

@@ -152,7 +152,7 @@ export function create_texture(gl, source) {
  * @returns {void}
  */
 export function set_attribute(gl, vbos, att_location, att_stride) {
-    for (const key of Object.keys(att_location)) {
+    for (const key of Object.keys(vbos)) {
         gl.bindBuffer(gl.ARRAY_BUFFER, vbos[key]);
         gl.enableVertexAttribArray(att_location[key]);
         gl.vertexAttribPointer(att_location[key], att_stride[key], gl.FLOAT, false, 0, 0);

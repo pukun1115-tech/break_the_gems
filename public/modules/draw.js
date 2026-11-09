@@ -16,11 +16,30 @@ import {
 import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Mat4 } from "./matrix.js";
 import {
-    player_mesh_color,
-    player_mesh_index,
-    player_mesh_position,
-    player_mesh_texture_coord,
-    player_mesh_stage
+    cube_mesh_index,
+    cube_mesh_index_count,
+    cube_mesh_position,
+
+    player_head_texture_coord,
+    player_body_texture_coord,
+    player_arm_texture_coord,
+    player_leg_texture_coord,
+
+    PLAYER_MESH_HEAD_X,
+    PLAYER_MESH_HEAD_Y,
+    PLAYER_MESH_HEAD_Z,
+
+    PLAYER_MESH_BODY_X,
+    PLAYER_MESH_BODY_Y,
+    PLAYER_MESH_BODY_Z,
+
+    PLAYER_MESH_ARM_X,
+    PLAYER_MESH_ARM_Y,
+    PLAYER_MESH_ARM_Z,
+
+    PLAYER_MESH_LEG_X,
+    PLAYER_MESH_LEG_Y,
+    PLAYER_MESH_LEG_Z,
 } from "./player_mesh.js";
 
 /** @type {HTMLCanvasElement} */
@@ -30,6 +49,25 @@ export const gl = canvas.getContext("webgl");
 if (gl === null) {
     throw new Error("gl");
 }
+
+gl.enable(gl.DEPTH_TEST);
+gl.enable(gl.CULL_FACE);
+gl.frontFace(gl.CCW);
+gl.clearColor(0.5, 0.5, 1.0, 1.0);
+gl.clearDepth(1.0);
+
+function resize_canvas(gl) {
+    gl.canvas.width = window.innerWidth;
+    gl.canvas.height = window.innerHeight;
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+}
+
+window.addEventListener("resize", () => {
+    setTimeout(() => {
+        resize_canvas(gl);
+    }, 10);
+});
+resize_canvas(gl);
 
 const vertex_shader = create_shader(gl, vertex_shader_source, "vertex");
 const fragment_shader = create_shader(gl, fragment_shader_source, "fragment");
@@ -60,36 +98,17 @@ if (block_texture === null || player_texture === null) {
 gl.activeTexture(gl.TEXTURE0);
 gl.uniform1i(uniform_locations["texture"], 0);
 
-function resize_canvas(gl) {
-    gl.canvas.width = window.innerWidth;
-    gl.canvas.height = window.innerHeight;
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-}
+const p_cube_ibo = create_ibo(gl, cube_mesh_index);
+const p_cube_position_vbo = create_vbo(gl, cube_mesh_position);
+const p_cube_color_vbo = create_vbo(gl, new Float32Array(96).fill(1.0));
+const p_cube_stage_vbo = create_vbo(gl, new Float32Array(24).fill(8));
 
-window.addEventListener("resize", () => {
-    setTimeout(() => {
-        resize_canvas(gl);
-    }, 10);
-});
-resize_canvas(gl);
-
-gl.enable(gl.DEPTH_TEST);
-gl.enable(gl.CULL_FACE);
-gl.frontFace(gl.CCW);
-gl.clearColor(0.5, 0.5, 1.0, 1.0);
-gl.clearDepth(1.0);
+const player_head_texture_coord_vbo = create_vbo(gl, player_head_texture_coord);
 
 const m_matrix = Mat4.identity(Mat4.create());
 const v_matrix = Mat4.identity(Mat4.create());
 const p_matrix = Mat4.identity(Mat4.create());
 const mvp_matrix = Mat4.identity(Mat4.create());
-
-const player_index_count = 36;
-const player_ibo = create_ibo(gl, player_mesh_index);
-const player_position_vbo = create_vbo(gl, player_mesh_position);
-const player_color_vbo = create_vbo(gl, player_mesh_color);
-const player_texture_coord_vbo = create_vbo(gl, player_mesh_texture_coord);
-const player_stage_vbo = create_vbo(gl, player_mesh_stage);
 
 function draw_chunks(chunks) {
     gl.bindTexture(gl.TEXTURE_2D, block_texture);
@@ -113,30 +132,42 @@ function draw_chunks(chunks) {
 }
 
 function draw_players(players, id) {
-    gl.bindTexture(gl.TEXTURE_2D, block_texture);
+    gl.bindTexture(gl.TEXTURE_2D, player_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
     set_attribute(gl, {
-        "position": player_position_vbo,
-        "color": player_color_vbo,
-        "texture_coord": player_texture_coord_vbo,
-        "stage": player_stage_vbo
+        "position": p_cube_position_vbo,
+        "color": p_cube_color_vbo,
+        "stage": p_cube_stage_vbo
     }, attribute_locations, attribute_strides);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, player_ibo);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, p_cube_ibo);
 
     for (const p of players) {
         if (p.id === id) {
             continue;
         }
+        //head
+        set_attribute(gl, {
+            "texture_coord": player_head_texture_coord_vbo
+        }, attribute_locations, attribute_strides);
+
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y, p.pos.z);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y + PLAYER_MESH_HEAD_Y / 2, p.pos.z);
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
+        Mat4.rotateX(m_matrix, m_matrix, deg2rad(p.rot.x));
+        Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_HEAD_X, PLAYER_MESH_HEAD_Y, PLAYER_MESH_HEAD_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
         Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
 
         gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
-        gl.drawElements(gl.TRIANGLES, player_index_count, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
+        //body
+        /*
+        set_attribute(gl, {
+            "texture_coord": 
+        })
+        */
     }
 }
 
