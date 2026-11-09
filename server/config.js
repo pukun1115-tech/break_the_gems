@@ -12,8 +12,9 @@ export const MIME_TYPES = Object.freeze({
 });
 
 export const PUBLIC_FILES = [
+    "/images/block_texture.png",
     "/images/icon.png",
-    "/images/texture.png",
+    "/images/player_texture.png",
     "/modules/chunk.js",
     "/modules/config.js",
     "/modules/draw.js",
