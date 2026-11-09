@@ -52,8 +52,8 @@ const attribute_strides = get_attribute_strides();
 /** @type {Record<string, number>} */
 const uniform_locations = get_uniform_locations(gl, program);
 
-const block_texture = create_texture(gl, "../images/block_texture.png");
-const player_texture = create_texture(gl, "../images/player_texture.png");
+const block_texture = await create_texture(gl, "../images/block_texture.png");
+const player_texture = await create_texture(gl, "../images/player_texture.png");
 if (block_texture === null || player_texture === null) {
     throw new Error("create_texture");
 }
