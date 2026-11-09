@@ -13,12 +13,12 @@ export function create_shader(gl, source, type) {
     } else if (type === "fragment") {
         shader = gl.createShader(gl.FRAGMENT_SHADER);
     } else {
-        console.error("cannot create shader. type: " + type);
+        console.log(new Error("cannot create shader. type: " + type));
         return null;
     }
 
     if (shader === null) {
-        console.error("cannot create shader. type: " + type);
+        console.log(new Error("cannot create shader. type: " + type));
         return null;
     }
 
@@ -28,7 +28,7 @@ export function create_shader(gl, source, type) {
     if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         return shader;
     } else {
-        console.error(gl.getShaderInfoLog(shader));
+        console.log(new Error(gl.getShaderInfoLog(shader)));
         return null;
     }
 }
@@ -43,7 +43,7 @@ export function create_program(gl, vs, fs) {
     /** @type {WebGLProgram | null} */
     const program = gl.createProgram();
     if (program === null) {
-        console.error("cannot create program.");
+        console.log(new Error("cannot create program."));
         return null;
     }
 
@@ -55,7 +55,7 @@ export function create_program(gl, vs, fs) {
     if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
         return program;
     } else {
-        console.error(gl.getProgramInfoLog(program));
+        console.log(new Error(gl.getProgramInfoLog(program)));
         return null;
     }
 }
@@ -69,7 +69,7 @@ export function create_vbo(gl, data) {
     /** @type {WebGLBuffer | null} */
     const vbo = gl.createBuffer();
     if (vbo === null) {
-        console.error("cannot create buffer.");
+        console.log(new Error("cannot create buffer."));
         return null;
     }
 
@@ -103,35 +103,44 @@ export function create_ibo(gl, data) {
     return ibo;
 }
 
+/**
+ * @param {WebGLRenderingContext} gl
+ * @param {string} source
+ * @returns {Promise<WebGLTexture | null>}
+ */
 export function create_texture(gl, source) {
-    const img = new Image();
+    return new Promise((resolve) => {
+        const img = new Image();
 
-    img.onload = () => {
-        const tex = gl.createTexture();
-        if (tex === null) {
-            return null;
-        }
+        img.onload = () => {
+            const tex = gl.createTexture();
+            if (tex === null) {
+                console.log(new Error("cannot create texture."));
+                resolve(null);
+            }
 
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            img
-        );
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                img
+            );
+            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.bindTexture(gl.TEXTURE_2D, null);
 
-        return tex;
-    };
+            resolve(tex);
+        };
 
-    img.onerror = () => {
-        return null;
-    };
+        img.onerror = () => {
+            console.log(new Error(`cannot load texture: ${source}`));
+            resolve(null);
+        };
 
-    img.src = source;
+        img.src = source;
+    });
 }
 
 /**
