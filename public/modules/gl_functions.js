@@ -93,52 +93,45 @@ export function create_ibo(gl, data) {
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), gl.STATIC_DRAW);
+    gl.bufferData(
+        gl.ELEMENT_ARRAY_BUFFER,
+        new Uint16Array(data),
+        gl.STATIC_DRAW
+    );
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     return ibo;
 }
 
-/**
- * @param {WebGLRenderingContext} gl
- * @param {string} source
- * @returns {void}
- */
 export function create_texture(gl, source) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
+    const img = new Image();
 
-        img.onload = () => {
-            const tex = gl.createTexture();
+    img.onload = () => {
+        const tex = gl.createTexture();
+        if (tex === null) {
+            return null;
+        }
 
-            if (tex === null) {
-                reject(new Error("cannot create texture"));
-            }
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            img
+        );
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
-            gl.bindTexture(gl.TEXTURE_2D, tex);
+        return tex;
+    };
 
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGBA,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                img
-            );
+    img.onerror = () => {
+        return null;
+    };
 
-            gl.generateMipmap(gl.TEXTURE_2D);
-
-            gl.bindTexture(gl.TEXTURE_2D, null);
-
-            resolve(tex);
-        };
-
-        img.onerror = () => {
-            reject(new Error(`failed to load texture: ${source}`));
-        };
-
-        img.src = source;
-    });
+    img.src = source;
 }
 
 /**
