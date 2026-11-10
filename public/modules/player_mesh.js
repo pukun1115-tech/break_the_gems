@@ -71,11 +71,11 @@ export const cube_mesh_position = new Float32Array([
     1, 0, 0,
     1, 0, 1,
     0, 0, 1
-].map((x) => {
-    return x - 0.5;
+].map((t) => {
+    return t - 0.5;
 }));
 
-export const player_head_texture_coord = new Float32Array(scale_player_UV([
+export const player_head_texture_coord_red = new Float32Array(scale_player_UV([
     //front
     1, 9,
     9, 9,
@@ -108,7 +108,14 @@ export const player_head_texture_coord = new Float32Array(scale_player_UV([
     21, 1
 ]));
 
-export const player_body_texture_coord = new Float32Array(scale_player_UV([
+export const player_head_texture_coord_blue = player_head_texture_coord_red.map((t, index) => {
+    if (index % 2 === 0) {
+        return t;
+    } else {
+        return t + 24;
+});
+
+export const player_body_texture_coord_red = new Float32Array(scale_player_UV([
     //front
     9, 19,
     9, 27,
@@ -141,7 +148,15 @@ export const player_body_texture_coord = new Float32Array(scale_player_UV([
     1, 19
 ]));
 
-export const player_arm_texture_coord = new Float32Array(scale_player_UV([
+export const player_body_texture_coord_blue = player_body_texture_coord_red.map((t, index) => {
+    if (index % 2 === 0) {
+        return t;
+    } else {
+        return t + 24;
+    }
+});
+
+export const player_arm_texture_coord_red = new Float32Array(scale_player_UV([
     //front
     23, 15,
     35, 15,
@@ -174,7 +189,15 @@ export const player_arm_texture_coord = new Float32Array(scale_player_UV([
     37, 11
 ]));
 
-export const player_leg_texture_coord = new Float32Array(scale_player_UV([
+export const player_arm_texture_coord_blue = player_arm_texture_coord_red.map((t, index) => {
+    if (index % 2 === 0) {
+        return t;
+    } else {
+        return t + 24;
+    }
+});
+
+export const player_leg_texture_coord_red = new Float32Array(scale_player_UV([
     //front
     1, 29,
     1, 33,
@@ -206,3 +229,11 @@ export const player_leg_texture_coord = new Float32Array(scale_player_UV([
     25, 29,
     21, 29
 ]));
+
+export const player_leg_texture_coord_blue = player_leg_texture_coord_red.map((t, index) => {
+    if (index % 2 === 0) {
+        return t;
+    } else {
+        return t + 24;
+    }
+});
