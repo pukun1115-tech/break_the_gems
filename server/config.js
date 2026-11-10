@@ -17,6 +17,7 @@ export const PUBLIC_FILES = [
     "/images/player_texture.png",
     "/modules/chunk.js",
     "/modules/config.js",
+    "/modules/cube_mesh.js",
     "/modules/draw.js",
     "/modules/gl_functions.js",
     "/modules/matrix.js",

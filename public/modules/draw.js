@@ -18,10 +18,11 @@ import { Mat4 } from "./matrix.js";
 import {
     cube_mesh_index,
     cube_mesh_index_count,
-    cube_mesh_position,
-
+    cube_mesh_position
+} from "./cube_mesh.js";
+import {
     player_head_texture_coord,
-    
+
     player_body_texture_coord_red,
     player_arm_texture_coord_red,
     player_leg_texture_coord_red,
@@ -171,11 +172,11 @@ function draw_players(players, id) {
 
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
-        
+
         Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
         Mat4.rotateX(m_matrix, m_matrix, deg2rad(p.rot.x));
         Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_HEAD_Y / 2, 0);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_HEAD_X, PLAYER_MESH_HEAD_Y, PLAYER_MESH_HEAD_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
@@ -192,9 +193,9 @@ function draw_players(players, id) {
 
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y / 2, p.pos.z);
-        
+
         Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_BODY_X, PLAYER_MESH_BODY_Y, PLAYER_MESH_BODY_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
@@ -212,10 +213,10 @@ function draw_players(players, id) {
         //left
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
-       
+
         Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
         Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, 0, 0);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
@@ -225,12 +226,12 @@ function draw_players(players, id) {
         gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
 
         //right
-        Mat4.identity(m_matrix); 
+        Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
-       
+
         Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, 0, 0);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
@@ -248,10 +249,10 @@ function draw_players(players, id) {
         //left
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y / 2, p.pos.z);
-       
+
         Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
         Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X / 2, 0, 0);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
@@ -263,10 +264,10 @@ function draw_players(players, id) {
         //right
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y / 2, p.pos.z);
-       
+
         Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X / 2, 0, 0);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
 
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
