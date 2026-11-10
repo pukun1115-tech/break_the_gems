@@ -145,7 +145,7 @@ export const player_body_texture_coord_blue = player_body_texture_coord_red.map(
     if (index % 2 === 0) {
         return t;
     } else {
-        return t + 24;
+        return t + 24 / PLAYER_TEXTURE_SIZE;
     }
 });
 
@@ -186,7 +186,7 @@ export const player_arm_texture_coord_blue = player_arm_texture_coord_red.map((t
     if (index % 2 === 0) {
         return t;
     } else {
-        return t + 24;
+        return t + 24 / PLAYER_TEXTURE_SIZE;
     }
 });
 
@@ -227,6 +227,6 @@ export const player_leg_texture_coord_blue = player_leg_texture_coord_red.map((t
     if (index % 2 === 0) {
         return t;
     } else {
-        return t + 24;
+        return t + 24 / PLAYER_TEXTURE_SIZE;
     }
 });
