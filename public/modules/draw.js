@@ -113,6 +113,11 @@ const player_body_texture_coord_red_vbo = create_vbo(gl, player_body_texture_coo
 const player_arm_texture_coord_red_vbo = create_vbo(gl, player_arm_texture_coord_red);
 const player_leg_texture_coord_red_vbo = create_vbo(gl, player_leg_texture_coord_red);
 
+const player_head_texture_coord_blue_vbo = create_vbo(gl, player_head_texture_coord_blue);
+const player_body_texture_coord_blue_vbo = create_vbo(gl, player_body_texture_coord_blue);
+const player_arm_texture_coord_blue_vbo = create_vbo(gl, player_arm_texture_coord_blue);
+const player_leg_texture_coord_blue_vbo = create_vbo(gl, player_leg_texture_coord_blue);
+
 const m_matrix = Mat4.identity(Mat4.create());
 const v_matrix = Mat4.identity(Mat4.create());
 const p_matrix = Mat4.identity(Mat4.create());
@@ -161,7 +166,7 @@ function draw_players(players, id) {
 
         //head
         set_attribute(gl, {
-            "texture_coord": player_head_texture_coord_red_vbo
+            "texture_coord": (p.team === "red" ? player_head_texture_coord_red_vbo : player_head_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
 
         Mat4.identity(m_matrix);
@@ -182,7 +187,7 @@ function draw_players(players, id) {
 
         //body
         set_attribute(gl, {
-            "texture_coord": player_body_texture_coord_red_vbo
+            "texture_coord": (p.team === "red" ? player_body_texture_coord_red_vbo : player_body_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
 
         Mat4.identity(m_matrix);
@@ -201,7 +206,7 @@ function draw_players(players, id) {
 
         //arm
         set_attribute(gl, {
-            "texture_coord": player_arm_texture_coord_red_vbo
+            "texture_coord": (p.team === "red" ? player_arm_texture_coord_red_vbo : player_arm_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
 
         //left
@@ -237,7 +242,7 @@ function draw_players(players, id) {
 
         //leg
         set_attribute(gl, {
-            "texture_coord": player_leg_texture_coord_red_vbo
+            "texture_coord": (p.team === "red" ? player_leg_texture_coord_red_vbo : player_leg_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
 
         //left
