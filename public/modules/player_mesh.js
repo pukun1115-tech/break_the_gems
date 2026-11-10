@@ -201,8 +201,8 @@ export const player_leg_texture_coord = new Float32Array(scale_player_UV([
     19, 29,
     15, 29,
     //bottom
-    21, 39,
-    25, 39,
-    25, 35,
-    21, 35
+    21, 33,
+    25, 33,
+    25, 29,
+    21, 29
 ]));

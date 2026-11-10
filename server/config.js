@@ -49,7 +49,7 @@ export const CHUNK_SIZE_Z = 16;
 
 export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
-export const PLAYER_JUMP_HEIGHT = 1.25;
+export const PLAYER_JUMP_HEIGHT = 1.1;
 
-export const BREAK_COOLDOWN = 5;
+export const BREAK_COOLDOWN = 2;
 export const PLACE_COOLDOWN = 5;
