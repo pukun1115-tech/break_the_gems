@@ -20,10 +20,15 @@ import {
     cube_mesh_index_count,
     cube_mesh_position,
 
-    player_head_texture_coord,
-    player_body_texture_coord,
-    player_arm_texture_coord,
-    player_leg_texture_coord,
+    player_head_texture_coord_red,
+    player_body_texture_coord_red,
+    player_arm_texture_coord_red,
+    player_leg_texture_coord_red,
+
+    player_head_texture_coord_blue,
+    player_body_texture_coord_blue,
+    player_arm_texture_coord_blue,
+    player_leg_texture_coord_blue,
 
     PLAYER_MESH_HEAD_X,
     PLAYER_MESH_HEAD_Y,
@@ -103,10 +108,10 @@ const p_cube_position_vbo = create_vbo(gl, cube_mesh_position);
 const p_cube_color_vbo = create_vbo(gl, new Float32Array(96).fill(1.0));
 const p_cube_stage_vbo = create_vbo(gl, new Float32Array(24).fill(8));
 
-const player_head_texture_coord_vbo = create_vbo(gl, player_head_texture_coord);
-const player_body_texture_coord_vbo = create_vbo(gl, player_body_texture_coord);
-const player_arm_texture_coord_vbo = create_vbo(gl, player_arm_texture_coord);
-const player_leg_texture_coord_vbo = create_vbo(gl, player_leg_texture_coord);
+const player_head_texture_coord_red_vbo = create_vbo(gl, player_head_texture_coord_red);
+const player_body_texture_coord_red_vbo = create_vbo(gl, player_body_texture_coord_red);
+const player_arm_texture_coord_red_vbo = create_vbo(gl, player_arm_texture_coord_red);
+const player_leg_texture_coord_red_vbo = create_vbo(gl, player_leg_texture_coord_red);
 
 const m_matrix = Mat4.identity(Mat4.create());
 const v_matrix = Mat4.identity(Mat4.create());
@@ -156,7 +161,7 @@ function draw_players(players, id) {
 
         //head
         set_attribute(gl, {
-            "texture_coord": player_head_texture_coord_vbo
+            "texture_coord": player_head_texture_coord_red_vbo
         }, attribute_locations, attribute_strides);
 
         Mat4.identity(m_matrix);
@@ -177,7 +182,7 @@ function draw_players(players, id) {
 
         //body
         set_attribute(gl, {
-            "texture_coord": player_body_texture_coord_vbo
+            "texture_coord": player_body_texture_coord_red_vbo
         }, attribute_locations, attribute_strides);
 
         Mat4.identity(m_matrix);
@@ -196,7 +201,7 @@ function draw_players(players, id) {
 
         //arm
         set_attribute(gl, {
-            "texture_coord": player_arm_texture_coord_vbo
+            "texture_coord": player_arm_texture_coord_red_vbo
         }, attribute_locations, attribute_strides);
 
         //left
@@ -232,7 +237,7 @@ function draw_players(players, id) {
 
         //leg
         set_attribute(gl, {
-            "texture_coord": player_leg_texture_coord_vbo
+            "texture_coord": player_leg_texture_coord_red_vbo
         }, attribute_locations, attribute_strides);
 
         //left
