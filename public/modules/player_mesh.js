@@ -75,7 +75,7 @@ export const cube_mesh_position = new Float32Array([
     return t - 0.5;
 }));
 
-export const player_head_texture_coord_red = new Float32Array(scale_player_UV([
+export const player_head_texture_coord = new Float32Array(scale_player_UV([
     //front
     1, 9,
     9, 9,
@@ -107,13 +107,6 @@ export const player_head_texture_coord_red = new Float32Array(scale_player_UV([
     29, 1,
     21, 1
 ]));
-
-export const player_head_texture_coord_blue = player_head_texture_coord_red.map((t, index) => {
-    if (index % 2 === 0) {
-        return t;
-    } else {
-        return t + 24;
-});
 
 export const player_body_texture_coord_red = new Float32Array(scale_player_UV([
     //front
