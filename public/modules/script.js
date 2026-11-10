@@ -1,7 +1,8 @@
 import { FPS, WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
 import { player_update, get_local_player } from "./player.js";
-import { draw, canvas } from "./draw.js";
+import { gl_draw, gl_canvas } from "./gl_draw.js";
+import { ui_draw, ui_canvas } from "./ui_draw.js";
 
 const socket = new WebSocket(`${WEBSOCKET_PROTOCOL}//${window.location.host}`);
 
@@ -79,7 +80,7 @@ socket.addEventListener("message", (event) => {
     }
 });
 
-canvas.addEventListener("contextmenu", (event) => {
+document.addEventListener("contextmenu", (event) => {
     event.preventDefault();
 });
 
@@ -91,7 +92,7 @@ window.addEventListener("keyup", (event) => {
 });
 
 document.addEventListener("pointerlockchange", () => {
-    if (document.pointerLockElement !== canvas) {
+    if (document.pointerLockElement !== gl_canvas) {
         for (const key of Object.keys(key_inputs)) {
             key_inputs[key] = false;
         }
@@ -107,12 +108,15 @@ document.addEventListener("visibilitychange", () => {
 document.addEventListener("blur", () => {
     document.exitPointerLock();
 });
-canvas.addEventListener("click", () => {
-    canvas.requestPointerLock();
+gl_canvas.addEventListener("click", () => {
+    gl_canvas.requestPointerLock();
+});
+ui_canvas.addEventListener("click", () => {
+    gl_canvas.requestPointerLock();
 });
 
-canvas.addEventListener("mousedown", (event) => {
-    if (document.pointerLockElement !== canvas) {
+gl_canvas.addEventListener("mousedown", (event) => {
+    if (document.pointerLockElement !== gl_canvas) {
         return;
     }
 
@@ -124,8 +128,8 @@ canvas.addEventListener("mousedown", (event) => {
     }
 });
 
-canvas.addEventListener("mouseup", (event) => {
-    if (document.pointerLockElement !== canvas) {
+gl_canvas.addEventListener("mouseup", (event) => {
+    if (document.pointerLockElement !== gl_canvas) {
         return;
     }
 
@@ -138,8 +142,8 @@ canvas.addEventListener("mouseup", (event) => {
 });
 
 
-canvas.addEventListener("mousemove", (event) => {
-    if (document.pointerLockElement !== canvas) {
+gl_canvas.addEventListener("mousemove", (event) => {
+    if (document.pointerLockElement !== gl_canvas) {
         return;
     }
 
@@ -184,7 +188,8 @@ function main_loop() {
         const pos = players.get(id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        draw(pos, rot, FOV, chunks, players.values(), id);
+        gl_draw(pos, rot, FOV, chunks, players.values(), id);
+        ui_draw(players.get(id).hp);
         //dev
         /*
         console.clear();

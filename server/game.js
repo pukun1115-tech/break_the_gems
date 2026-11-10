@@ -11,7 +11,7 @@ import {
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
-import { break_block, place_block } from "./break_place_block.js";
+import { find_target, break_block, place_block } from "./break_place_block.js";
 
 
 export class Game {
@@ -208,12 +208,17 @@ export class Game {
             //break and place block
             if (input.mouse_inputs.left_click) {
                 const can_break = (player.break_time + BREAK_COOLDOWN <= Game.time);
-                const can_attack = (player.attack_time + ATTACK_COOLDOWN <= Game.time)
-                if (can_break || can_attack) {
-                    const result = break_block(Game.chunks, player, Game.players);
-                    
-                    if (result !== null) {
-                        if (result.type === "break_block" && can_break) {
+                const can_attack = (player.attack_time + ATTACK_COOLDOWN <= Game.time);
+
+                const target = find_target(Game.chunks, player, Game.players);
+                if (target !== null) {
+                    if (target.type === "hit" && can_attack) {
+                        player.attack_time = Game.time;
+
+                        Game.add_player_hp(target.id, -1);
+                    } else if (target.type === "break_block" && can_break) {
+                        const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                        if (result !== null) {
                             player.break_time = Game.time;
 
                             Game.broadcast(JSON.stringify({
@@ -222,10 +227,6 @@ export class Game {
                                 pos: result.pos,
                                 block: result.block
                             }));
-                        } else if (result.type === "hit" && can_attack) {
-                            player.attack_time = Game.time;
-
-                            Game.add_player_hp(result.id, -1);
                         }
                     }
                 }

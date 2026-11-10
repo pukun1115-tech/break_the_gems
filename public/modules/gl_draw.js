@@ -52,9 +52,9 @@ import {
 } from "./player_mesh.js";
 
 /** @type {HTMLCanvasElement} */
-export const canvas = document.getElementById("gl_canvas");
+export const gl_canvas = document.getElementById("gl_canvas");
 /** @type {WebGLRenderingContext | null} */
-export const gl = canvas.getContext("webgl");
+export const gl = gl_canvas.getContext("webgl");
 if (gl === null) {
     throw new Error("gl");
 }
@@ -65,18 +65,18 @@ gl.frontFace(gl.CCW);
 gl.clearColor(0.5, 0.5, 1.0, 1.0);
 gl.clearDepth(1.0);
 
-function resize_canvas(gl) {
-    gl.canvas.width = window.innerWidth;
-    gl.canvas.height = window.innerHeight;
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+function resize_gl_canvas(gl) {
+    gl_canvas.width = window.innerWidth;
+    gl_canvas.height = window.innerHeight;
+    gl.viewport(0, 0, gl_canvas.width, gl_canvas.height);
 }
 
 window.addEventListener("resize", () => {
     setTimeout(() => {
-        resize_canvas(gl);
+        resize_gl_canvas(gl);
     }, 10);
 });
-resize_canvas(gl);
+resize_gl_canvas(gl);
 
 const vertex_shader = create_shader(gl, vertex_shader_source, "vertex");
 const fragment_shader = create_shader(gl, fragment_shader_source, "fragment");
@@ -281,7 +281,7 @@ function draw_players(players, id) {
     }
 }
 
-export function draw(pos, rot, FOV, chunks, players, id) {
+export function gl_draw(pos, rot, FOV, chunks, players, id) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     Mat4.identity(m_matrix);
@@ -293,7 +293,7 @@ export function draw(pos, rot, FOV, chunks, players, id) {
     const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
 
     Mat4.lookAt(v_matrix, [pos.x, pos.y + PLAYER_EYE_Y, pos.z], [pos.x + center.x, pos.y + PLAYER_EYE_Y + center.y, pos.z + center.z], [up.x, up.y, up.z]);
-    Mat4.perspective(p_matrix, deg2rad(FOV), canvas.width / canvas.height, 0.01, 1000);
+    Mat4.perspective(p_matrix, deg2rad(FOV), gl_canvas.width / gl_canvas.height, 0.01, 1000);
 
     draw_chunks(chunks);
     draw_players(players, id);

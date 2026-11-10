@@ -1,4 +1,4 @@
-import { gl } from "./draw.js";
+import { gl } from "./gl_draw.js";
 import { create_ibo, create_vbo } from "./gl_functions.js";
 import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z, BLOCK_TEXTURECOORD } from "./config.js";
 

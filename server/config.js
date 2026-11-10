@@ -18,7 +18,8 @@ export const PUBLIC_FILES = [
     "/modules/chunk.js",
     "/modules/config.js",
     "/modules/cube_mesh.js",
-    "/modules/draw.js",
+    "/modules/gl_draw.js",
+    "/modules/ui_draw.js",
     "/modules/gl_functions.js",
     "/modules/matrix.js",
     "/modules/player_mesh.js",
@@ -57,6 +58,6 @@ export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
 export const PLAYER_JUMP_HEIGHT = 1.1;
 
-export const BREAK_COOLDOWN = 0.25 * FPS;
+export const BREAK_COOLDOWN = (0.5 / 8) * FPS;
 export const PLACE_COOLDOWN = 0.25 * FPS;
-export const ATTACK_COOLDOWN = 0.5 * FPS;
+export const ATTACK_COOLDOWN = 0.05 * FPS;

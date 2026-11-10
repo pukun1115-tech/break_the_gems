@@ -69,10 +69,17 @@ export function is_on_ground(chunks, px, py, pz) {
  * @param {number} py
  * @param {number} pz
  * @param {Map<string, { pos: { x: number, y: number, z: number }, id: string }>} players
+ * @param {{ pos: { x: number, y: number, z: number }, id: string, team: string }} player
  * @returns {string | null}
  */
-export function check_point_player_collision(px, py, pz, players) {
+export function check_point_player_collision(px, py, pz, players, player) {
     for (const p of players.values()) {
+        if (p.id === player.id) {
+            continue;
+        }
+        if (p.team === player.team) {
+            continue;
+        }
         if (
             px >= p.pos.x - PLAYER_HIT_X / 2 &&
             px <= p.pos.x + PLAYER_HIT_X / 2 &&

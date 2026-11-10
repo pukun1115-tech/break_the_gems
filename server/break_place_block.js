@@ -12,17 +12,13 @@ import {
     check_point_player_collision
 } from "./collision.js";
 
-export function find_target() {
-    //
-}
-
 /**
  * @param {Map<string, Chunk>} chunks
  * @param {{ pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
  * @param {Map<string, { pos: { x: number, y: number, z: number }, id: string }>} players
  * @returns {{ type: "break_block", chunk_key: string, pos: { x: number, y: number, z: number }, block: { type: number, stage: number } } | { type: "hit", id: string } | null}
  */
-export function break_block(chunks, player, players) {
+export function find_target(chunks, player, players) {
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -30,16 +26,19 @@ export function break_block(chunks, player, players) {
     const direction = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: rot_x, y: rot_y, z: rot_z });
 
     const ray_step = 0.05;
-    const max_distance = 4;
+    const break_max_distance = 4;
+    const attack_max_distance = 2;
 
-    for (let distance = 0; distance <= max_distance; distance += ray_step) {
+    for (let distance = 0; distance <= break_max_distance; distance += ray_step) {
         const ray_x = player.pos.x + direction.x * distance;
         const ray_y = player.pos.y + PLAYER_EYE_Y + direction.y * distance;
         const ray_z = player.pos.z + direction.z * distance;
 
-        const hit_p_id = check_point_player_collision(ray_x, ray_y, ray_z, players);
-        if (hit_p_id !== null && hit_p_id !== player.id) {
-            return { type: "hit", id: hit_p_id };
+        if (distance <= attack_max_distance) {
+            const hit_p_id = check_point_player_collision(ray_x, ray_y, ray_z, players, player);
+            if (hit_p_id !== null) {
+                return { type: "hit", id: hit_p_id };
+            }
         }
 
         const world_x = Math.floor(ray_x);
@@ -67,17 +66,28 @@ export function break_block(chunks, player, players) {
             continue;
         }
 
-        if (target_chunk.map[local_x][local_y][local_z].type === 1) {
-            break;
-        }
-
-        target_chunk.map[local_x][local_y][local_z].stage--;
-        if (target_chunk.map[local_x][local_y][local_z].stage <= 0) {
-            target_chunk.map[local_x][local_y][local_z] = { type: 0, stage: 8 };
-        }
-        return { type: "break_block", chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z }, block: target_chunk.map[local_x][local_y][local_z] };
+        return { type: "break_block", chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z } };
     }
     return null;
+}
+
+export function break_block(chunk_key, pos, chunks) {
+    const target_chunk = chunks.get(chunk_key);
+    if (target_chunk === undefined) {
+        return null;
+    }
+
+    const block = target_chunk.map[pos.x][pos.y][pos.z];
+    if (block.type === 0 || block.type === 1) {
+        return null;
+    }
+
+    block.stage--;
+    if (block.stage <= 0) {
+        block.type = 0;
+        block.stage = 0;
+    }
+    return { chunk_key: chunk_key, pos: pos, block: block };
 }
 
 /**
