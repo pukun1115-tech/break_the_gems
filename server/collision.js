@@ -1,4 +1,12 @@
-import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z } from "./config.js";
+import {
+    CHUNK_SIZE_X,
+    CHUNK_SIZE_Y,
+    CHUNK_SIZE_Z,
+
+    PLAYER_HIT_X,
+    PLAYER_HIT_Y,
+    PLAYER_HIT_Z
+} from "./config.js";
 
 
 /**
@@ -9,12 +17,12 @@ import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z } from "./config.js";
  * @returns {boolean}
  */
 export function check_player_chunk_collision(chunks, px, py, pz) {
-    const p_max_x = px + 0.3;
-    const p_min_x = px - 0.3;
-    const p_max_y = py + 1.6;
+    const p_max_x = px + PLAYER_HIT_X / 2;
+    const p_min_x = px - PLAYER_HIT_X / 2;
+    const p_max_y = py + PLAYER_HIT_Y;
     const p_min_y = py;
-    const p_max_z = pz + 0.3;
-    const p_min_z = pz - 0.3;
+    const p_max_z = pz + PLAYER_HIT_Z / 2;
+    const p_min_z = pz - PLAYER_HIT_Z / 2;
     for (const c of chunks.values()) {
         if (
             c.x > p_max_x ||
@@ -54,4 +62,27 @@ export function check_player_chunk_collision(chunks, px, py, pz) {
 
 export function is_on_ground(chunks, px, py, pz) {
     return check_player_chunk_collision(chunks, px, py - 0.01, pz);
+}
+
+/**
+ * @param {number} px
+ * @param {number} py
+ * @param {number} pz
+ * @param {Map<string, { pos: { x: number, y: number, z: number }, id: string }>} players
+ * @returns {string | null}
+ */
+export function check_point_player_collision(px, py, pz, players) {
+    for (const p of players.values()) {
+        if (
+            px >= p.pos.x - PLAYER_HIT_X / 2 &&
+            px <= p.pos.x + PLAYER_HIT_X / 2 &&
+            py >= p.pos.y &&
+            py <= p.pos.y + PLAYER_HIT_Y &&
+            pz >= p.pos.z - PLAYER_HIT_Z / 2 &&
+            pz <= p.pos.z + PLAYER_HIT_Z / 2
+        ) {
+            return p.id;
+        }
+    }
+    return null;
 }

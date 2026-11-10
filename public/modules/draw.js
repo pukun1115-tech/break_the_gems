@@ -16,6 +16,9 @@ import {
 import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Mat4 } from "./matrix.js";
 import {
+    PLAYER_EYE_Y
+} from "./config.js";
+import {
     cube_mesh_index,
     cube_mesh_index_count,
     cube_mesh_position
@@ -49,7 +52,7 @@ import {
 } from "./player_mesh.js";
 
 /** @type {HTMLCanvasElement} */
-export const canvas = document.getElementById("canvas");
+export const canvas = document.getElementById("gl_canvas");
 /** @type {WebGLRenderingContext | null} */
 export const gl = canvas.getContext("webgl");
 if (gl === null) {
@@ -289,7 +292,7 @@ export function draw(pos, rot, FOV, chunks, players, id) {
     const center = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
     const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
 
-    Mat4.lookAt(v_matrix, [pos.x, pos.y + 1.4, pos.z], [pos.x + center.x, pos.y + 1.4 + center.y, pos.z + center.z], [up.x, up.y, up.z]);
+    Mat4.lookAt(v_matrix, [pos.x, pos.y + PLAYER_EYE_Y, pos.z], [pos.x + center.x, pos.y + PLAYER_EYE_Y + center.y, pos.z + center.z], [up.x, up.y, up.z]);
     Mat4.perspective(p_matrix, deg2rad(FOV), canvas.width / canvas.height, 0.01, 1000);
 
     draw_chunks(chunks);

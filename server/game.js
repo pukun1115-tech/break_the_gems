@@ -1,6 +1,14 @@
 import { Chunk, get_chunk_key } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
-import { FPS, GRAVITY, PLAYER_MOVE_SPEED, PLAYER_JUMP_HEIGHT, BREAK_COOLDOWN, PLACE_COOLDOWN } from "./config.js";
+import {
+    FPS,
+    GRAVITY,
+    PLAYER_MOVE_SPEED,
+    PLAYER_JUMP_HEIGHT,
+    BREAK_COOLDOWN,
+    PLACE_COOLDOWN,
+    ATTACK_COOLDOWN
+} from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { break_block, place_block } from "./break_place_block.js";
@@ -56,7 +64,7 @@ export class Game {
             block: 10,
             break_time: Game.time - BREAK_COOLDOWN,
             place_time: Game.time - PLACE_COOLDOWN,
-            attack_time: null,
+            attack_time: Game.time - ATTACK_COOLDOWN,
             team: t,
             velocity_y: 0,
             pos: { x: 0, y: 100, z: 0 },
@@ -118,10 +126,12 @@ export class Game {
         Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
     }
 
-    static broadcast(text) {
-        for (const s of Game.sockets_by_id.values()) {
-            send_text_frame(s, text);
+    static add_player_hp(id, amount) {
+        const p = Game.players.get(id);
+        if (p === undefined) {
+            return;
         }
+        p.hp += amount;
     }
 
     static update() {
@@ -197,12 +207,26 @@ export class Game {
 
             //break and place block
             if (input.mouse_inputs.left_click) {
-                if (player.break_time + BREAK_COOLDOWN <= Game.time) {
-                    player.break_time = Game.time;
-                    const result = break_block(Game.chunks, player);
+                const can_break = (player.break_time + BREAK_COOLDOWN <= Game.time);
+                const can_attack = (player.attack_time + ATTACK_COOLDOWN <= Game.time)
+                if (can_break || can_attack) {
+                    const result = break_block(Game.chunks, player, Game.players);
+                    
                     if (result !== null) {
-                        Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
-                        player.break_time = Game.time;
+                        if (result.type === "break_block" && can_break) {
+                            player.break_time = Game.time;
+
+                            Game.broadcast(JSON.stringify({
+                                type: "update_map",
+                                chunk_key: result.chunk_key,
+                                pos: result.pos,
+                                block: result.block
+                            }));
+                        } else if (result.type === "hit" && can_attack) {
+                            player.attack_time = Game.time;
+
+                            Game.add_player_hp(result.id, -1);
+                        }
                     }
                 }
             }
@@ -249,6 +273,12 @@ export class Game {
             console.log(`invalid message: unknown message type ${message.type}`);
             console.log(`message: ${message}`);
             return;
+        }
+    }
+
+    static broadcast(text) {
+        for (const s of Game.sockets_by_id.values()) {
+            send_text_frame(s, text);
         }
     }
 }

@@ -4,3 +4,17 @@ body {
     overflow: hidden;
     touch-action: none;
 }
+
+#ui_canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+}
+
+#gl_canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+}

@@ -48,9 +48,15 @@ export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
 
+export const PLAYER_HIT_X = 0.6;
+export const PLAYER_HIT_Y = 1.6;
+export const PLAYER_HIT_Z = 0.6;
+export const PLAYER_EYE_Y = 1.4;
+
 export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
 export const PLAYER_JUMP_HEIGHT = 1.1;
 
-export const BREAK_COOLDOWN = 7.5;
-export const PLACE_COOLDOWN = 5;
+export const BREAK_COOLDOWN = 0.25 * FPS;
+export const PLACE_COOLDOWN = 0.25 * FPS;
+export const ATTACK_COOLDOWN = 0.5 * FPS;

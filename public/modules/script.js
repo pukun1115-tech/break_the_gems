@@ -185,6 +185,11 @@ function main_loop() {
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
         draw(pos, rot, FOV, chunks, players.values(), id);
+        //dev
+        /*
+        console.clear();
+        console.log(players.get(id).hp);
+        */
     }
 
     setTimeout(() => {
