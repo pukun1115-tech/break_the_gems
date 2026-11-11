@@ -18,7 +18,7 @@ export function ui_draw(hp, attack) {
     ctx.fillStyle = "white";
     ctx.font = "20px sans-serif";
     ctx.fillText(`HP: ${hp}`, 10, 30);
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle = "rgba(191, 191, 191, 1)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(ui_canvas.width / 2 - 10, ui_canvas.height / 2);
@@ -28,6 +28,7 @@ export function ui_draw(hp, attack) {
     ctx.stroke();
     if (attack) {
         ctx.strokeStyle = "rgba(255, 0, 0, 1)";
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(ui_canvas.width / 2 - 5, ui_canvas.height / 2 + 5);
         ctx.lineTo(ui_canvas.width / 2 + 5, ui_canvas.height / 2 - 5);
