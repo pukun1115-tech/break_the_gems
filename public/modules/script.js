@@ -9,6 +9,8 @@ const socket = new WebSocket(`${WEBSOCKET_PROTOCOL}//${window.location.host}`);
 let id = null;
 let players = new Map();
 let team_point = null;
+let time = 0;
+let attack_time = -1;
 
 /** @type {Map<string, Chunk>} */
 let chunks = new Map();
@@ -77,6 +79,8 @@ socket.addEventListener("message", (event) => {
     } else if (data.type === "update_map") {
         chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block;
         chunks.get(data.chunk_key).generate_mesh();
+    } else if (data.type === "attack") {
+        attack_time = time;
     }
 });
 
@@ -175,8 +179,11 @@ function send_rot(player) {
     }));
 }
 
+
+
 function main_loop() {
     if (id !== null) {
+        time++;
         //game update
         player_update(mouse_inputs, key_inputs);
         mouse_inputs.movement_x = 0;
@@ -189,7 +196,7 @@ function main_loop() {
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
         gl_draw(pos, rot, FOV, chunks, players.values(), id);
-        ui_draw(players.get(id).hp);
+        ui_draw(players.get(id).hp, (attack_time + 3 > time));
         //dev
         /*
         console.clear();

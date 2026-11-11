@@ -60,4 +60,4 @@ export const PLAYER_JUMP_HEIGHT = 1.1;
 
 export const BREAK_COOLDOWN = (0.5 / 8) * FPS;
 export const PLACE_COOLDOWN = 0.25 * FPS;
-export const ATTACK_COOLDOWN = 0.05 * FPS;
+export const ATTACK_COOLDOWN = 0.2 * FPS;

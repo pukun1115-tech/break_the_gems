@@ -216,6 +216,7 @@ export class Game {
                         player.attack_time = Game.time;
 
                         Game.add_player_hp(target.id, -1);
+                        send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
                     } else if (target.type === "break_block" && can_break) {
                         const result = break_block(target.chunk_key, target.pos, Game.chunks);
                         if (result !== null) {
