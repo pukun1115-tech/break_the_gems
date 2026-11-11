@@ -204,7 +204,7 @@ function main_loop() {
         const pos = players.get(id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        gl_draw(pos, rot, FOV, chunks, players.values(), id);
+        gl_draw(pos, rot, FOV, chunks, players.values(), id, animation_time);
         ui_draw(players.get(id).hp, (attack_time + 3 > time));
         //dev
         /*
