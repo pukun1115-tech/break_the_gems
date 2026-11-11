@@ -79,10 +79,17 @@ socket.addEventListener("message", (event) => {
     } else if (data.type === "update_players") {
         players.clear();
         for (const p of data.players) {
-            animation_time.set(p.id, { 
-                leg: (p.animation.leg ? performance.now() : -1),
-                arm: (p.animation.arm ? performance.now() : -1)
-            });
+            const animation = animation_time.get(p.id);
+            if (p.animation.leg) {
+                const player = players.get(p.id);
+                if (player !== undefined) {
+                    if (player.animation.leg === false) {
+                        animation.leg = performance.now();
+                    }
+                }
+            } else {
+                animation.leg = -1;
+            }
             players.set(p.id, p);
         }
     } else if (data.type === "update_map") {
