@@ -77,7 +77,6 @@ socket.addEventListener("message", (event) => {
         players.delete(data.id);
         animation_time.delete(data.id);
     } else if (data.type === "update_players") {
-        players.clear();
         for (const p of data.players) {
             const animation = animation_time.get(p.id);
             if (p.animation.leg) {
@@ -90,6 +89,9 @@ socket.addEventListener("message", (event) => {
             } else {
                 animation.leg = -1;
             }
+        }
+        players.clear();
+        for (const p of data.players) {
             players.set(p.id, p);
         }
     } else if (data.type === "update_map") {
