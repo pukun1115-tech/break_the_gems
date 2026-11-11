@@ -107,6 +107,16 @@ if (block_texture === null || player_texture === null) {
 gl.activeTexture(gl.TEXTURE0);
 gl.uniform1i(uniform_locations["texture"], 0);
 
+function get_leg_angles(id, animation_time) {
+    const time = animation_time.get(id);
+    if (time === -1) {
+        return {
+            left: 0,
+            right: 0
+        }
+    }
+}
+
 const p_cube_ibo = create_ibo(gl, cube_mesh_index);
 const p_cube_position_vbo = create_vbo(gl, cube_mesh_position);
 const p_cube_color_vbo = create_vbo(gl, new Float32Array(96).fill(1.0));
