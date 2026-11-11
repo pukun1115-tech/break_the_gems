@@ -147,7 +147,6 @@ const player_leg_texture_coord_blue_vbo = create_vbo(gl, player_leg_texture_coor
 const m_matrix = Mat4.identity(Mat4.create());
 const v_matrix = Mat4.identity(Mat4.create());
 const p_matrix = Mat4.identity(Mat4.create());
-const player_rot_y_matrix = Mat4.identity(Mat4.create());
 const mvp_matrix = Mat4.identity(Mat4.create());
 
 function draw_chunks(chunks) {
@@ -171,7 +170,7 @@ function draw_chunks(chunks) {
     }
 }
 
-function draw_players(players, id) {
+function draw_players(players, id, animation_time) {
     gl.bindTexture(gl.TEXTURE_2D, player_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
@@ -187,9 +186,6 @@ function draw_players(players, id) {
             continue;
         }
 
-        Mat4.identity(player_rot_y_matrix);
-        Mat4.rotateY(player_rot_y_matrix, player_rot_y_matrix, deg2rad(p.rot.y));
-
         //head
         set_attribute(gl, {
             "texture_coord": player_head_texture_coord_vbo
@@ -198,7 +194,7 @@ function draw_players(players, id) {
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
 
-        Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
+        Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.rotateX(m_matrix, m_matrix, deg2rad(p.rot.x));
         Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_HEAD_Y / 2, 0);
 
@@ -219,7 +215,7 @@ function draw_players(players, id) {
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y / 2, p.pos.z);
 
-        Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
+        Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_BODY_X, PLAYER_MESH_BODY_Y, PLAYER_MESH_BODY_Z);
 
@@ -239,7 +235,7 @@ function draw_players(players, id) {
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
 
-        Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
+        Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, 0, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
@@ -254,7 +250,7 @@ function draw_players(players, id) {
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
 
-        Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
+        Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, 0, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
@@ -270,13 +266,16 @@ function draw_players(players, id) {
         set_attribute(gl, {
             "texture_coord": (p.team === "red" ? player_leg_texture_coord_red_vbo : player_leg_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
-
+        const leg_x_angle = get_leg_angles(p.id, animation_time);
+        
         //left
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y / 2, p.pos.z);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
 
-        Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
+        Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X / 2, 0, 0);
+        Mat4.rotateX(m_matrix, m_matrix, deg2rad(leg_x_angle.left));
+        Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_LEG_Y / 2, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
 
@@ -288,13 +287,15 @@ function draw_players(players, id) {
 
         //right
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y / 2, p.pos.z);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
 
-        Mat4.multiply(m_matrix, m_matrix, player_rot_y_matrix);
+        Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X / 2, 0, 0);
-
+        Mat4.rotateX(m_matrix, m_matrix, deg2rad(leg_x_angle.right));
+        Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_LEG_Y / 2, 0);
+        
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
-
+        
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
         Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
 
@@ -318,5 +319,5 @@ export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time) {
     Mat4.perspective(p_matrix, deg2rad(FOV), gl_canvas.width / gl_canvas.height, 0.01, 1000);
 
     draw_chunks(chunks);
-    draw_players(players, id);
+    draw_players(players, id, animation_time);
 }
