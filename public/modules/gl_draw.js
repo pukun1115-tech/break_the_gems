@@ -274,7 +274,7 @@ function draw_players(players, id, animation_time) {
 
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X / 2, 0, 0);
-        Mat4.rotateX(m_matrix, m_matrix, deg2rad(leg_x_angle.left));
+        Mat4.rotateX(m_matrix, m_matrix, leg_x_angle.left);
         Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_LEG_Y / 2, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
@@ -291,7 +291,7 @@ function draw_players(players, id, animation_time) {
 
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X / 2, 0, 0);
-        Mat4.rotateX(m_matrix, m_matrix, deg2rad(leg_x_angle.right));
+        Mat4.rotateX(m_matrix, m_matrix, leg_x_angle.right);
         Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_LEG_Y / 2, 0);
         
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
