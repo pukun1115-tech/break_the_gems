@@ -11,6 +11,8 @@ let players = new Map();
 let team_point = null;
 let time = 0;
 let attack_time = -1;
+/** @type{Map<string, { leg: number, arm: number }>} */
+let animation_time = new Map();
 
 /** @type {Map<string, Chunk>} */
 let chunks = new Map();
@@ -69,11 +71,18 @@ socket.addEventListener("message", (event) => {
         }
     } else if (data.type === "player_joined") {
         console.log(`${data.id} joined the game`);
+        animation_time.set(data.id, -1);
     } else if (data.type === "player_left") {
         console.log(`${data.id} left the game`);
+        players.delete(data.id);
+        animation_time.delete(data.id);
     } else if (data.type === "update_players") {
         players.clear();
         for (const p of data.players) {
+            animation_time.set(p.id, { 
+                leg: (p.animation.leg ? performance.now() : -1),
+                arm: (p.animation.arm ? performance.now() : -1)
+            });
             players.set(p.id, p);
         }
     } else if (data.type === "update_map") {
