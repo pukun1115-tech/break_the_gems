@@ -291,7 +291,7 @@ function draw_players(players, id) {
     }
 }
 
-export function gl_draw(pos, rot, FOV, chunks, players, id) {
+export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     Mat4.identity(m_matrix);
