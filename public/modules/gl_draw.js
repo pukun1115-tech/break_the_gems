@@ -108,13 +108,25 @@ gl.activeTexture(gl.TEXTURE0);
 gl.uniform1i(uniform_locations["texture"], 0);
 
 function get_leg_angles(id, animation_time) {
-    const time = animation_time.get(id);
+    const start_time = animation_time.get(id);
     if (time === -1) {
         return {
             left: 0,
             right: 0
         }
     }
+
+    const speed = 4;
+    const max_angle = deg2rad(60);
+
+    const a = performance.now() - time;
+
+    const angle = Math.sin((Math.PI * 2 * speed / 1000) * a) * max_angle;
+    
+    return {
+        left: angle,
+        right: -angle
+    };
 }
 
 const p_cube_ibo = create_ibo(gl, cube_mesh_index);
