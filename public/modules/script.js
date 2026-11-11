@@ -59,6 +59,7 @@ socket.addEventListener("message", (event) => {
     if (data.type === "init") {
         id = data.id;
         for (const p of data.players) {
+            animation_time.set(p.id, { leg: -1, arm: -1 });
             players.set(p.id, p);
         }
         team_point = data.team_point;
@@ -71,7 +72,7 @@ socket.addEventListener("message", (event) => {
         }
     } else if (data.type === "player_joined") {
         console.log(`${data.id} joined the game`);
-        animation_time.set(data.id, -1);
+        animation_time.set(p.id, { leg: -1, arm: -1 });
     } else if (data.type === "player_left") {
         console.log(`${data.id} left the game`);
         players.delete(data.id);
