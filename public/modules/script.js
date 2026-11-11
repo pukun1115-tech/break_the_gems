@@ -72,7 +72,7 @@ socket.addEventListener("message", (event) => {
         }
     } else if (data.type === "player_joined") {
         console.log(`${data.id} joined the game`);
-        animation_time.set(p.id, { leg: -1, arm: -1 });
+        animation_time.set(data.id, { leg: -1, arm: -1 });
     } else if (data.type === "player_left") {
         console.log(`${data.id} left the game`);
         players.delete(data.id);
