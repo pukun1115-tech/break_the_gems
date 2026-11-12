@@ -1,6 +1,6 @@
 import { FPS, WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
-import { player_update, get_local_player } from "./player.js";
+import { player_update, get_local_player, set_local_player_rot } from "./player.js";
 import { gl_draw, gl_canvas } from "./gl_draw.js";
 import { ui_draw, ui_canvas } from "./ui_draw.js";
 
@@ -10,7 +10,7 @@ let id = null;
 let players = new Map();
 let team_point = null;
 let time = 0;
-let attack_time = -1;
+let attack_time = -3;
 /** @type{Map<string, { walking: boolean, hit: boolean }>} */
 let animation_time = new Map();
 
@@ -61,6 +61,9 @@ socket.addEventListener("message", (event) => {
         for (const p of data.players) {
             animation_time.set(p.id, { walking: false, hit: false });
             players.set(p.id, p);
+            if (p.id === id) {
+                set_local_player_rot(p);
+            }
         }
         team_point = data.team_point;
         for (const chunk_key of Object.keys(data.chunks)) {

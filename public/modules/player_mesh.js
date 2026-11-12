@@ -99,35 +99,35 @@ export const player_body_texture_coord_blue = player_body_texture_coord_red.map(
 
 export const player_arm_texture_coord_red = new Float32Array(scale_player_UV([
     //front
+    23, 11,
     23, 15,
     35, 15,
     35, 11,
-    23, 11,
     //back
+    23, 11,
     23, 15,
     35, 15,
     35, 11,
-    23, 11,
     //right
+    23, 11,
     23, 15,
     35, 15,
     35, 11,
-    23, 11,
     //left
+    23, 11,
     23, 15,
     35, 15,
     35, 11,
-    23, 11,
     //top
-    37, 15,
-    41, 15,
-    41, 11,
     37, 11,
-    //bottom
     37, 15,
     41, 15,
     41, 11,
-    37, 11
+    //bottom
+    43, 11,
+    43, 15,
+    47, 15,
+    47, 11
 ]));
 
 export const player_arm_texture_coord_blue = player_arm_texture_coord_red.map((t, index) => {

@@ -46,59 +46,87 @@ export class Game {
         Game.chunks.clear();
         
         const c00 = new Chunk(0, 0);
-        c00.create_map(6);
+        c00.fill_map(6);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c00.set_block(1, x, y, 0);
+                c00.set_block(1, 8, x, y, 0);
             }
         }
         for (let z = 0; z < CHUNK_SIZE_Z; z++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c00.set_block(1, 0, y, z);
+                c00.set_block(1, 8, 0, y, z);
             }
         }
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+                c00.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+                c00.set_block(1, 8, x, 0, z);
+            }
+        }
+        c00.set_block(0, 0, 1, 16, 1);
+        c00.set_block(0, 0, 1, 17, 1);
         Game.chunks.set(get_chunk_key(0, 0), c00);
 
         const c01 = new Chunk(0, 1);
-        c01.create_map(6);
+        c01.fill_map(6);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c01.set_block(1, x, y, CHUNK_SIZE_Z - 1);
+                c01.set_block(1, 8, x, y, CHUNK_SIZE_Z - 1);
             }
         }
         for (let z = 0; z < CHUNK_SIZE_Z; z++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c01.set_block(1, 0, y, z);
+                c01.set_block(1, 8, 0, y, z);
+            }
+        }
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+                c01.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+                c01.set_block(1, 8, x, 0, z);
             }
         }
         Game.chunks.set(get_chunk_key(0, 1), c01);
 
         const c10 = new Chunk(1, 0);
-        c10.create_map(6);
+        c10.fill_map(6);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c10.set_block(1, x, y, 0);
+                c10.set_block(1, 8, x, y, 0);
             }
         }
         for (let z = 0; z < CHUNK_SIZE_Z; z++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c10.set_block(1, CHUNK_SIZE_X - 1, y, z);
+                c10.set_block(1, 8, CHUNK_SIZE_X - 1, y, z);
+            }
+        }
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+                c10.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+                c10.set_block(1, 8, x, 0, z);
             }
         }
         Game.chunks.set(get_chunk_key(1, 0), c10);
 
         const c11 = new Chunk(1, 1);
-        c11.create_map(6);
+        c11.fill_map(6);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c11.set_block(1, x, y, CHUNK_SIZE_Z - 1);
+                c11.set_block(1, 8, x, y, CHUNK_SIZE_Z - 1);
             }
         }
         for (let z = 0; z < CHUNK_SIZE_Z; z++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                c11.set_block(1, CHUNK_SIZE_X - 1, y, z);
+                c11.set_block(1, 8, CHUNK_SIZE_X - 1, y, z);
             }
         }
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+                c11.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+                c11.set_block(1, 8, x, 0, z);
+            }
+        }
+        c11.set_block(0, 0, 14, 16, 14);
+        c11.set_block(0, 0, 14, 17, 14);
         Game.chunks.set(get_chunk_key(1, 1), c11);
     }
 
@@ -119,8 +147,8 @@ export class Game {
             attack_time: Game.time - ATTACK_COOLDOWN,
             team: t,
             velocity_y: 0,
-            pos: { x: 0, y: 100, z: 0 },
-            rot: { x: 0, y: 0, z: 0 },
+            pos: (t === "red" ? { x: 1.5, y: 16, z: 1.5 } : { x: 30.5, y: 16, z: 30.5 }),
+            rot: (t === "red" ? { x: 0, y: 45, z: 0 } : { x: 0, y: -135, z: 0 }),
             animation: { walking: false }
         };
     }

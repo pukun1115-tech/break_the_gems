@@ -11,6 +11,10 @@ export function get_local_player() {
     return structuredClone(local_player);
 }
 
+export function set_local_player_rot(player) {
+    local_player.rot = player.rot;
+}
+
 /**
  * @param {{movement_x: number, movement_y: number}} mouse_inputs
  * @param {Record<string, boolean>} key_inputs
