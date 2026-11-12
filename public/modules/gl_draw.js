@@ -146,8 +146,8 @@ function get_arm_angles(id, animation_time) {
     const angle = Math.sin((Math.PI * 2 * speed / 1000) * a) * max_angle;
     
     return {
-        left: angle,
-        right: -angle
+        left: -angle,
+        right: angle
     };
 }
 
