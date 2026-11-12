@@ -5,8 +5,12 @@ import {
     MIME_TYPES,
     DEFAULT_PATH,
     PUBLIC_FILES,
-    MAGIC_STRING
+    MAGIC_STRING,
+    ALLOWED_ORIGINS,
+    MAX_PLAYERS
 } from "../config.js";
+import { send_close_frame } from "./socket.js";
+import { Game } from "../game.js";
 
 
 export function create_http_server(request, response) {
@@ -31,10 +35,22 @@ export function create_http_server(request, response) {
 }
 
 export function server_on_upgrade(request, socket) {
+    const origin = request.headers["origin"];
+
+    if (typeof origin !== "string" || !ALLOWED_ORIGINS.has(origin)) {
+        socket.write(
+            "HTTP/1.1 403 Forbidden\r\n" +
+            "Connection: close\r\n" +
+            "\r\n"
+        );
+        socket.destroy();
+        return false;
+    }
+
     const web_socket_key = request.headers["sec-websocket-key"];
     if (!web_socket_key) {
         socket.destroy();
-        return;
+        return false;
     }
     const accept_key = crypto
         .createHash("sha1")
@@ -48,4 +64,10 @@ export function server_on_upgrade(request, socket) {
         "\r\n"
     );
     socket.write(response);
+    if (Game.players.size >= MAX_PLAYERS) {
+        send_close_frame(socket, 1013, "混んでます");
+        socket.end();
+        return;
+    }
+    return true;
 }

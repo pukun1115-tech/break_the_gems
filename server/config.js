@@ -31,8 +31,10 @@ export const PUBLIC_FILES = [
     "/style.css"
 ];
 
-//
-export const FPS = 60;
+export const ALLOWED_ORIGINS = new Set([
+    "https://break-the-gems.onrender.com",
+    "http://localhost:3000"
+]);
 
 //WebSocket
 export const MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -45,6 +47,8 @@ export const PONG_OPCODE = 0b1010;
 export const MAX_BUFFER_SIZE = 512 * 512;
 
 //Game
+export const MAX_PLAYERS = 6;
+export const FPS = 60;
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;

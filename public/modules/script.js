@@ -31,13 +31,16 @@ window.addEventListener("beforeunload", () => {
 });
 
 socket.addEventListener("close", (event) => {
+    if (event.code === 1013) {
+        alert(event.reason);
+    }
     console.log("disconnected from server");
     console.log(`code: ${event.code}`);
     console.log(`reason: ${event.reason}`);
 });
 
 socket.addEventListener("error", (error) => {
-    console.log(`error: ${error}`);
+    console.log("error:", error);
 });
 
 socket.addEventListener("message", (event) => {

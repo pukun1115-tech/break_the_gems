@@ -17,10 +17,7 @@ const server = http.createServer((request, response) => {
 });
 
 server.on("upgrade", (request, socket, head) => {
-    try {
-        server_on_upgrade(request, socket);
-    } catch (error) {
-        console.log(`error: ${error}; at server_on_upgrade`);
+    if (!server_on_upgrade(request, socket)) {
         return;
     }
 
