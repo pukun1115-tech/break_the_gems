@@ -41,10 +41,13 @@ export class Game {
 
     static init_chunks() {
         Game.chunks.clear();
+        const c00 = new Chunk(0, 0);
+        c.create_map(6);
+        
         for (let x = 0; x < 2; x++) {
             for (let z = 0; z < 2; z++) {
                 const c = new Chunk(x, z);
-                c.create_map();
+                c.create_map(6);
                 Game.chunks.set(get_chunk_key(x, z), c);
             }
         }
