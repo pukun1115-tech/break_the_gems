@@ -140,28 +140,30 @@ function get_arm_angles(id, animation_time) {
     }
 
     const walk_arm_speed = 2;
-    const hit_arm_speed = 1;
+    const hit_arm_speed = 4;
     const walk_max_angle = deg2rad(30);
     const hit_max_angle = deg2rad(45);
-    
-    let angle = 0;
+
+    let angle = {
+        left: 0,
+        right: 0
+    };
 
     if (walk_start_time !== -1) {
         const walk_a = performance.now() - walk_start_time;
         const walk_angle = Math.sin((Math.PI * 2 * (walk_arm_speed / 1000)) * walk_a) * walk_max_angle;
-        angle += walk_angle;
+        if (hit_start_time === -1) {
+            angle.left -= walk_angle;
+        }
+        angle.right += walk_angle;
     }
     if (hit_start_time !== -1) {
         const hit_a = performance.now() - hit_start_time;
         const hit_angle = (Math.sin((Math.PI * 2 * (hit_arm_speed / 1000)) * hit_a) + 1) * 0.5 * hit_max_angle;
-        angle += hit_angle;
-    
+        angle.left -= hit_angle;
     }
-    
-    return {
-        left: -angle,
-        right: angle
-    };
+
+    return angle;
 }
 
 const p_cube_ibo = create_ibo(gl, cube_mesh_index);
