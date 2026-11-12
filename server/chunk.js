@@ -29,13 +29,17 @@ export class Chunk {
         this.map = null;
     }
 
-    create_map() {
+    create_map(fill_type) {
         this.map = new Array(CHUNK_SIZE_X);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             this.map[x] = new Array(CHUNK_SIZE_Y);
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
-                this.map[x][y] = Array.from({ length: CHUNK_SIZE_Z }, () => ({ type: 6, stage: 8 }));
+                this.map[x][y] = Array.from({ length: CHUNK_SIZE_Z }, () => ({ type: fill_type, stage: 8 }));
             }
         }
+    }
+
+    set_block(set_type, x, y, z) {
+        this.map[x][y][z] = set_type;
     }
 }
