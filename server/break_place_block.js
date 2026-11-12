@@ -16,7 +16,7 @@ import {
  * @param {Map<string, Chunk>} chunks
  * @param {{ pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
  * @param {Map<string, { pos: { x: number, y: number, z: number }, id: string }>} players
- * @returns {{ type: "break_block", chunk_key: string, pos: { x: number, y: number, z: number }, block: { type: number, stage: number } } | { type: "hit", id: string } | null}
+ * @returns {{ type: "break_block", chunk_key: string, pos: { x: number, y: number, z: number }, block: { type: number, stage: number }, block_type: number } | { type: "hit", id: string } | null}
  */
 export function find_target(chunks, player, players) {
     const rot_x = deg2rad(player.rot.x);
@@ -66,7 +66,7 @@ export function find_target(chunks, player, players) {
             continue;
         }
 
-        return { type: "break_block", chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z } };
+        return { type: "break_block", chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z }, block_type: target_chunk.map[local_x][local_y][local_z].type };
     }
     return null;
 }

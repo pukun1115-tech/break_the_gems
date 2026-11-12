@@ -10,7 +10,8 @@ import {
     ATTACK_COOLDOWN,
     CHUNK_SIZE_X,
     CHUNK_SIZE_Y,
-    CHUNK_SIZE_Z
+    CHUNK_SIZE_Z,
+    BREAK_GEM_COOLDOWN
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
@@ -20,7 +21,7 @@ import { find_target, break_block, place_block } from "./break_place_block.js";
 export class Game {
     static time = 0;
     /**
-     * @type {Map<string, { id: string, hp: number, block: number, break_time: number, place_time: number, attack_time: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}, animation: { walking: boolean, hit: boolean } }>} 
+     * @type {Map<string, { id: string, hp: number, block: number, break_time: number, break_gem_time: number, place_time: number, attack_time: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}, animation: { walking: boolean, hit: boolean } }>} 
      */
     static players = new Map();
     /**
@@ -63,8 +64,21 @@ export class Game {
                 c00.set_block(1, 8, x, 0, z);
             }
         }
-        c00.set_block(0, 0, 1, 16, 1);
-        c00.set_block(0, 0, 1, 17, 1);
+
+        for (let x = 1; x <= 3; x++) {
+            for (let y = 16; y <= 18; y++) {
+                for (let z = 1; z <= 3; z++) {
+                    c00.set_block(0, 0, x, y, z);
+                }
+            }
+        }
+        for (let x = 2; x <= 3; x++) {
+            for (let y = 16; y <= 17; y++) {
+                for (let z = 2; z <= 3; z++) {
+                    c00.set_block(3, 8, x, y, z);
+                }
+            }
+        }
         Game.chunks.set(get_chunk_key(0, 0), c00);
 
         const c01 = new Chunk(0, 1);
@@ -125,8 +139,21 @@ export class Game {
                 c11.set_block(1, 8, x, 0, z);
             }
         }
-        c11.set_block(0, 0, 14, 16, 14);
-        c11.set_block(0, 0, 14, 17, 14);
+
+        for (let x = 12; x <= 14; x++) {
+            for (let y = 16; y <= 18; y++) {
+                for (let z = 12; z <= 14; z++) {
+                    c11.set_block(0, 0, x, y, z);
+                }
+            }
+        }
+        for (let x = 12; x <= 13; x++) {
+            for (let y = 16; y <= 17; y++) {
+                for (let z = 12; z <= 13; z++) {
+                    c11.set_block(5, 8, x, y, z);
+                }
+            }
+        }
         Game.chunks.set(get_chunk_key(1, 1), c11);
     }
 
@@ -143,6 +170,7 @@ export class Game {
             hp: 100,
             block: 10,
             break_time: Game.time - BREAK_COOLDOWN,
+            break_gem_time: Game.time - BREAK_GEM_COOLDOWN,
             place_time: Game.time - PLACE_COOLDOWN,
             attack_time: Game.time - ATTACK_COOLDOWN,
             team: t,
@@ -298,6 +326,7 @@ export class Game {
             //break and place block
             if (input.mouse_inputs.left_click) {
                 const can_break = (player.break_time + BREAK_COOLDOWN <= Game.time);
+                const can_break_gem = (player.break_gem_time + BREAK_GEM_COOLDOWN <= Game.time);
                 const can_attack = (player.attack_time + ATTACK_COOLDOWN <= Game.time);
 
                 const target = find_target(Game.chunks, player, Game.players);
@@ -307,17 +336,31 @@ export class Game {
 
                         Game.add_player_hp(target.id, -1);
                         send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
-                    } else if (target.type === "break_block" && can_break) {
-                        const result = break_block(target.chunk_key, target.pos, Game.chunks);
-                        if (result !== null) {
-                            player.break_time = Game.time;
-
-                            Game.broadcast(JSON.stringify({
-                                type: "update_map",
-                                chunk_key: result.chunk_key,
-                                pos: result.pos,
-                                block: result.block
-                            }));
+                    } else if (target.type === "break_block") {
+                        if (target.block_type !== 3 && target.block_type !== 5 && can_break) {
+                            const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                            if (result !== null) {
+                                player.break_time = Game.time;
+                                
+                                Game.broadcast(JSON.stringify({
+                                    type: "update_map",
+                                    chunk_key: result.chunk_key,
+                                    pos: result.pos,
+                                    block: result.block
+                                }));
+                            }
+                        } else if (can_break_gem){
+                            const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                            if (result !== null) {
+                                player.break_gem_time = Game.time;
+                                
+                                Game.broadcast(JSON.stringify({
+                                    type: "update_map",
+                                    chunk_key: result.chunk_key,
+                                    pos: result.pos,
+                                    block: result.block
+                                }));
+                            }
                         }
                     }
                 }
