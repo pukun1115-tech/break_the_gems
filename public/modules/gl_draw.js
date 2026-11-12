@@ -108,7 +108,7 @@ gl.activeTexture(gl.TEXTURE0);
 gl.uniform1i(uniform_locations["texture"], 0);
 
 function get_leg_angles(id, animation_time) {
-    const start_time = animation_time.get(id)?.leg ?? -1;
+    const start_time = animation_time.get(id)?.walking ?? -1;
     if (start_time === -1) {
         return {
             left: 0,
@@ -122,7 +122,7 @@ function get_leg_angles(id, animation_time) {
     const a = performance.now() - start_time;
 
     const angle = Math.sin((Math.PI * 2 * speed / 1000) * a) * max_angle;
-    
+
     return {
         left: angle,
         right: -angle
@@ -130,21 +130,26 @@ function get_leg_angles(id, animation_time) {
 }
 
 function get_arm_angles(id, animation_time) {
-    const start_time = animation_time.get(id)?.leg ?? -1;
-    if (start_time === -1) {
+    const walk_start_time = animation_time.get(id)?.walking ?? -1;
+    const hit_start_time = animation_time.get(id)?.hit ?? -1;
+    if (walk_start_time === -1 && hit_start_time === -1) {
         return {
             left: 0,
             right: 0
         };
     }
 
-    const speed = 2;
-    const max_angle = deg2rad(30);
+    const walk_arm_speed = 2;
+    const hit_arm_speed = 2;
+    const walk_max_angle = deg2rad(30);
+    const hit_max_angle = deg2rad(60);
 
-    const a = performance.now() - start_time;
+    const walk_a = performance.now() - walk_start_time;
+    const hit_a = performance.now() - hit_start_time;
 
-    const angle = Math.sin((Math.PI * 2 * speed / 1000) * a) * max_angle;
-    
+    const walk_angle = Math.sin((Math.PI * 2 * walk_arm_speed / 1000) * walk_a) * walk_max_angle;
+    const hit_angle = Math.sin((Math.PI * 2 * 2 / 1000) * hit_a) * hit_max_angle;
+
     return {
         left: -angle,
         right: angle
@@ -253,7 +258,7 @@ function draw_players(players, id, animation_time) {
             "texture_coord": (p.team === "red" ? player_arm_texture_coord_red_vbo : player_arm_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
         const arm_x_angle = get_arm_angles(p.id, animation_time);
-        
+
         //left
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
@@ -294,7 +299,7 @@ function draw_players(players, id, animation_time) {
             "texture_coord": (p.team === "red" ? player_leg_texture_coord_red_vbo : player_leg_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
         const leg_x_angle = get_leg_angles(p.id, animation_time);
-        
+
         //left
         Mat4.identity(m_matrix);
         Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
@@ -320,9 +325,9 @@ function draw_players(players, id, animation_time) {
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X / 2, 0, 0);
         Mat4.rotateX(m_matrix, m_matrix, leg_x_angle.right);
         Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_LEG_Y / 2, 0);
-        
+
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_LEG_X, PLAYER_MESH_LEG_Y, PLAYER_MESH_LEG_Z);
-        
+
         Mat4.multiply(mvp_matrix, p_matrix, v_matrix);
         Mat4.multiply(mvp_matrix, mvp_matrix, m_matrix);
 

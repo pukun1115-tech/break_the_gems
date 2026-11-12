@@ -17,7 +17,7 @@ import { find_target, break_block, place_block } from "./break_place_block.js";
 export class Game {
     static time = 0;
     /**
-     * @type {Map<string, { id: string, hp: number, block: number, break_time: number, place_time: number, attack_time: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}, animation: { arm: boolean, leg: boolean }}>} 
+     * @type {Map<string, { id: string, hp: number, block: number, break_time: number, place_time: number, attack_time: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}, animation: { walking: boolean, hit: boolean } }>} 
      */
     static players = new Map();
     /**
@@ -69,7 +69,7 @@ export class Game {
             velocity_y: 0,
             pos: { x: 0, y: 100, z: 0 },
             rot: { x: 0, y: 0, z: 0 },
-            animation: { arm: false, leg: false }
+            animation: { walking: false }
         };
     }
 
@@ -177,12 +177,14 @@ export class Game {
                 player.pos.z = next_z;
             }
 
-            player.animation.leg =  (
+            player.animation.walking = (
                 input.key_inputs["KeyW"] === true ||
                 input.key_inputs["KeyA"] === true ||
                 input.key_inputs["KeyS"] === true ||
                 input.key_inputs["KeyD"] === true
             );
+
+            player.animation.hit = input.mouse_inputs.left_click;
 
             //velocity_y
             player.velocity_y -= GRAVITY * delta_time;

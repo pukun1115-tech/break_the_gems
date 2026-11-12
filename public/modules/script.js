@@ -11,7 +11,7 @@ let players = new Map();
 let team_point = null;
 let time = 0;
 let attack_time = -1;
-/** @type{Map<string, { leg: number, arm: number }>} */
+/** @type{Map<string, { walking: boolean, hit: boolean }>} */
 let animation_time = new Map();
 
 /** @type {Map<string, Chunk>} */
@@ -59,7 +59,7 @@ socket.addEventListener("message", (event) => {
     if (data.type === "init") {
         id = data.id;
         for (const p of data.players) {
-            animation_time.set(p.id, { leg: -1, arm: -1 });
+            animation_time.set(p.id, { walking: false, hit: false });
             players.set(p.id, p);
         }
         team_point = data.team_point;
@@ -72,7 +72,7 @@ socket.addEventListener("message", (event) => {
         }
     } else if (data.type === "player_joined") {
         console.log(`${data.id} joined the game`);
-        animation_time.set(data.id, { leg: -1, arm: -1 });
+        animation_time.set(data.id, { walking: false, hit: false });
     } else if (data.type === "player_left") {
         console.log(`${data.id} left the game`);
         players.delete(data.id);
@@ -80,15 +80,26 @@ socket.addEventListener("message", (event) => {
     } else if (data.type === "update_players") {
         for (const p of data.players) {
             const animation = animation_time.get(p.id);
-            if (p.animation.leg) {
+            if (p.animation.walking) {
                 const player = players.get(p.id);
                 if (player !== undefined) {
-                    if (player.animation.leg === false) {
-                        animation.leg = performance.now();
+                    if (player.animation.walking === false) {
+                        animation.walking = performance.now();
                     }
                 }
             } else {
-                animation.leg = -1;
+                animation.walking = -1;
+            }
+
+            if (p.animation.hit) {
+                const player = players.get(p.id);
+                if (player !== undefined) {
+                    if (player.animation.hit === false) {
+                        animation.hit = performance.now();
+                    }
+                }
+            } else {
+                animation.hit = -1;
             }
         }
         players.clear();
