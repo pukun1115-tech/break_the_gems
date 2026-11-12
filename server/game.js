@@ -21,13 +21,48 @@ import { find_target, break_block, place_block } from "./break_place_block.js";
 export class Game {
     static time = 0;
     /**
-     * @type {Map<string, { id: string, hp: number, block: number, break_time: number, break_gem_time: number, place_time: number, attack_time: number, team: string, velocity_y: number, pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number}, animation: { walking: boolean, hit: boolean } }>} 
+     * @type {Map<string, {
+     *     id: string,
+     *     hp: number,
+     *     team: "red" | "blue",
+     *     pos: {
+     *         x: number,
+     *         y: number,
+     *         z: number
+     *     },
+     *     rot: {
+     *         x: number,
+     *         y: number,
+     *         z: number
+     *     },
+     *     animation: {
+     *         walking: boolean,
+     *         hit: boolean
+     *     }
+     * }>} 
      */
     static players = new Map();
     /**
-     * @type {Map<string, { key_inputs: Record<string, boolean>, mouse_inputs: { left_click: boolean, right_click: boolean }}>}
+     * @type {Map<string, {
+     *     key_inputs: Record<string, boolean>,
+     *     mouse_inputs: {
+     *         left_click: boolean,
+     *         right_click: boolean
+     *     }
+     * }>}
      */
     static player_inputs = new Map();
+    /**
+     * @type {Map<string, {
+     *     break_time: number,
+     *     break_gem_time: number,
+     *     place_time: number,
+     *     attack_time: number,
+     *     velocity_y: number
+     * }>}
+     */
+    static players_states = new Map();
+
     static sockets_by_id = new Map();
     static ids_by_socket = new Map();
     static player_count = {
@@ -45,7 +80,7 @@ export class Game {
 
     static init_chunks() {
         Game.chunks.clear();
-        
+
         const c00 = new Chunk(0, 0);
         c00.fill_map(6);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
@@ -162,44 +197,36 @@ export class Game {
         return t.charAt(0).toUpperCase() + t.slice(1);
     }
 
-    static create_initial_player(id) {
-        const c = Game.player_count;
-        const t = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
-        return {
-            id: id,
-            hp: 100,
-            block: 10,
+    static add_player(socket) {
+        const id = Game.create_player_id(6);
+        const count = Game.player_count;
+        const team = (count.red === count.blue ? (Math.random() > 0.5 ? "red" : "blue") : (count.red > count.blue ? "blue" : "red"));
+        Game.players_states.set(id, {
             break_time: Game.time - BREAK_COOLDOWN,
             break_gem_time: Game.time - BREAK_GEM_COOLDOWN,
             place_time: Game.time - PLACE_COOLDOWN,
             attack_time: Game.time - ATTACK_COOLDOWN,
-            team: t,
             velocity_y: 0,
-            pos: (t === "red" ? { x: 1.5, y: 16, z: 1.5 } : { x: 30.5, y: 16, z: 30.5 }),
-            rot: (t === "red" ? { x: 0, y: 45, z: 0 } : { x: 0, y: -135, z: 0 }),
-            animation: { walking: false }
-        };
-    }
+        });
+        Game.players.set(id, {
+            id: id,
+            hp: 100,
+            team: team,
+            pos: (team === "red" ? { x: 1.5, y: 16, z: 1.5 } : { x: 30.5, y: 16, z: 30.5 }),
+            rot: (team === "red" ? { x: 0, y: 45, z: 0 } : { x: 0, y: -135, z: 0 }),
+            animation: { walking: false, hit: false }
+        });
 
-    static create_initial_player_input() {
-        return {
+        Game.player_count[team]++;
+        Game.sockets_by_id.set(id, socket);
+        Game.ids_by_socket.set(socket, id);
+        Game.player_inputs.set(id, {
             key_inputs: {},
             mouse_inputs: {
                 left_click: false,
                 right_click: false
             }
-        };
-    }
-
-    static add_player(socket) {
-        const id = Game.create_player_id(6);
-        const new_player = Game.create_initial_player(id);
-
-        Game.player_count[new_player.team]++;
-        Game.sockets_by_id.set(id, socket);
-        Game.ids_by_socket.set(socket, id);
-        Game.players.set(id, new_player);
-        Game.player_inputs.set(id, Game.create_initial_player_input());
+        });
 
         send_text_frame(socket, JSON.stringify({
             type: "init",
@@ -231,6 +258,7 @@ export class Game {
         Game.ids_by_socket.delete(socket);
         Game.players.delete(id);
         Game.player_inputs.delete(id);
+        Game.players_states.delete(id);
 
         Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
     }
@@ -249,7 +277,8 @@ export class Game {
         for (const id of Game.players.keys()) {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
-            if (!input || !player) {
+            const state = Game.players_states.get(id);
+            if (!input || !player || !state) {
                 continue;
             }
 
@@ -295,20 +324,20 @@ export class Game {
             player.animation.hit = input.mouse_inputs.left_click;
 
             //velocity_y
-            player.velocity_y -= GRAVITY * delta_time;
+            state.velocity_y -= GRAVITY * delta_time;
 
             if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z)) {
-                player.velocity_y = 0;
+                state.velocity_y = 0;
 
                 if (input.key_inputs["Space"] === true) {
-                    player.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
+                    state.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
                 }
             }
 
-            next_y = player.pos.y + player.velocity_y * delta_time;
+            next_y = player.pos.y + state.velocity_y * delta_time;
 
             if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
-                if (player.velocity_y < 0) {
+                if (state.velocity_y < 0) {
                     while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
                         next_y += 0.005;
                     }
@@ -318,21 +347,21 @@ export class Game {
                     }
                 }
 
-                player.velocity_y = 0;
+                state.velocity_y = 0;
             }
 
             player.pos.y = next_y;
 
             //break and place block
             if (input.mouse_inputs.left_click) {
-                const can_break = (player.break_time + BREAK_COOLDOWN <= Game.time);
-                const can_break_gem = (player.break_gem_time + BREAK_GEM_COOLDOWN <= Game.time);
-                const can_attack = (player.attack_time + ATTACK_COOLDOWN <= Game.time);
+                const can_break = (state.break_time + BREAK_COOLDOWN <= Game.time);
+                const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.time);
+                const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.time);
 
                 const target = find_target(Game.chunks, player, Game.players);
                 if (target !== null) {
                     if (target.type === "hit" && can_attack) {
-                        player.attack_time = Game.time;
+                        state.attack_time = Game.time;
 
                         Game.add_player_hp(target.id, -1);
                         send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
@@ -340,8 +369,8 @@ export class Game {
                         if (target.block_type !== 3 && target.block_type !== 5 && can_break) {
                             const result = break_block(target.chunk_key, target.pos, Game.chunks);
                             if (result !== null) {
-                                player.break_time = Game.time;
-                                
+                                state.break_time = Game.time;
+
                                 Game.broadcast(JSON.stringify({
                                     type: "update_map",
                                     chunk_key: result.chunk_key,
@@ -349,11 +378,11 @@ export class Game {
                                     block: result.block
                                 }));
                             }
-                        } else if (can_break_gem){
+                        } else if (can_break_gem) {
                             const result = break_block(target.chunk_key, target.pos, Game.chunks);
                             if (result !== null) {
-                                player.break_gem_time = Game.time;
-                                
+                                state.break_gem_time = Game.time;
+
                                 Game.broadcast(JSON.stringify({
                                     type: "update_map",
                                     chunk_key: result.chunk_key,
@@ -366,8 +395,8 @@ export class Game {
                 }
             }
             if (input.mouse_inputs.right_click) {
-                if (player.place_time + PLACE_COOLDOWN <= Game.time) {
-                    player.place_time = Game.time;
+                if (state.place_time + PLACE_COOLDOWN <= Game.time) {
+                    state.place_time = Game.time;
                     const result = place_block(Game.chunks, Game.players.values(), player, (player.team === "red" ? 2 : 4));
                     if (result !== null) {
                         Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
@@ -392,21 +421,47 @@ export class Game {
             return;
         }
 
-        if (message.type === null || message.type === undefined) {
-            console.log("invalid message: missing type");
-            console.log(`message: ${message}`);
+        if (message === null || typeof message !== "object" || Array.isArray(message)) {
+            console.log("invalid message: not an object");
+            console.log("message:", message);
             return;
         }
 
-        if (message.type === "chat") {
-            //
-        } else if (message.type === "input") {
+        if (!Object.hasOwn(message, "type")) {
+            console.log("invalid message: missing type");
+            console.log("message:", message);
+            return;
+        }
+
+        if (message.type === "input") {
+            if (
+                !Object.hasOwn(message, "input") ||
+                !Object.hasOwn(message.input, "mouse_inputs") ||
+                !Object.hasOwn(message.input.mouse_inputs, "left_click") ||
+                !Object.hasOwn(message.input.mouse_inputs, "right_click")
+            ) {
+                Game.remove_player(socket);
+                socket.destroy();
+                return;
+            }
             Game.player_inputs.set(id, message.input);
         } else if (message.type === "rot") {
-            Game.players.get(id).rot = message.rot;
+            if (
+                !Object.hasOwn(message, "rot") ||
+                !Object.hasOwn(message.rot, "x") ||
+                !Object.hasOwn(message.rot, "y") ||
+                !Object.hasOwn(message.rot, "z")
+            ) {
+                Game.remove_player(socket);
+                socket.destroy();
+                return;
+            }
+            Game.players.get(id).rot.x = (Number.isFinite(message.rot.x) ? message.rot.x : 0);
+            Game.players.get(id).rot.y = (Number.isFinite(message.rot.y) ? message.rot.y : 0);
+            Game.players.get(id).rot.z = (Number.isFinite(message.rot.z) ? message.rot.z : 0);
         } else {
             console.log(`invalid message: unknown message type ${message.type}`);
-            console.log(`message: ${message}`);
+            console.log("message:", message);
             return;
         }
     }
