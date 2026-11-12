@@ -140,15 +140,15 @@ function get_arm_angles(id, animation_time) {
     }
 
     const walk_arm_speed = 2;
-    const hit_arm_speed = 2;
+    const hit_arm_speed = 1;
     const walk_max_angle = deg2rad(30);
-    const hit_max_angle = deg2rad(60);
+    const hit_max_angle = deg2rad(45);
 
     const walk_a = performance.now() - walk_start_time;
     const hit_a = performance.now() - hit_start_time;
 
-    const walk_angle = Math.sin((Math.PI * 2 * walk_arm_speed / 1000) * walk_a) * walk_max_angle;
-    const hit_angle = Math.sin((Math.PI * 2 * 2 / 1000) * hit_a) * hit_max_angle;
+    const walk_angle = Math.sin((Math.PI * 2 * (walk_arm_speed / 1000)) * walk_a) * walk_max_angle;
+    const hit_angle = (Math.sin((Math.PI * 2 * (hit_arm_speed / 1000)) * hit_a) + 1) * 0.5 * hit_max_angle;
 
     return {
         left: -angle,
