@@ -7,7 +7,10 @@ import {
     PLAYER_JUMP_HEIGHT,
     BREAK_COOLDOWN,
     PLACE_COOLDOWN,
-    ATTACK_COOLDOWN
+    ATTACK_COOLDOWN,
+    CHUNK_SIZE_X,
+    CHUNK_SIZE_Y,
+    CHUNK_SIZE_Z
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
@@ -41,16 +44,62 @@ export class Game {
 
     static init_chunks() {
         Game.chunks.clear();
-        const c00 = new Chunk(0, 0);
-        c.create_map(6);
         
-        for (let x = 0; x < 2; x++) {
-            for (let z = 0; z < 2; z++) {
-                const c = new Chunk(x, z);
-                c.create_map(6);
-                Game.chunks.set(get_chunk_key(x, z), c);
+        const c00 = new Chunk(0, 0);
+        c00.create_map(6);
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c00.set_block(1, x, y, 0);
             }
         }
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c00.set_block(1, 0, y, z);
+            }
+        }
+        Game.chunks.set(get_chunk_key(0, 0), c00);
+
+        const c01 = new Chunk(0, 1);
+        c01.create_map(6);
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c01.set_block(1, x, y, CHUNK_SIZE_Z - 1);
+            }
+        }
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c01.set_block(1, 0, y, z);
+            }
+        }
+        Game.chunks.set(get_chunk_key(0, 1), c01);
+
+        const c10 = new Chunk(1, 0);
+        c10.create_map(6);
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c10.set_block(1, x, y, 0);
+            }
+        }
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c10.set_block(1, CHUNK_SIZE_X - 1, y, z);
+            }
+        }
+        Game.chunks.set(get_chunk_key(1, 0), c10);
+
+        const c11 = new Chunk(1, 1);
+        c01.create_map(6);
+        for (let x = 0; x < CHUNK_SIZE_X; x++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c11.set_block(1, x, y, CHUNK_SIZE_Z - 1);
+            }
+        }
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+                c11.set_block(1, CHUNK_SIZE_X - 1, y, z);
+            }
+        }
+        Game.chunks.set(get_chunk_key(1, 1), c11);
     }
 
     static create_player_id(length) {
