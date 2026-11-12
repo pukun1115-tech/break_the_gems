@@ -137,7 +137,7 @@ export class Game {
 
     static update() {
         const delta_time = 1 / FPS;
-        this.time++;
+        Game.time++;
         for (const id of Game.players.keys()) {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
