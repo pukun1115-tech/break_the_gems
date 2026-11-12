@@ -88,7 +88,7 @@ export class Game {
         Game.chunks.set(get_chunk_key(1, 0), c10);
 
         const c11 = new Chunk(1, 1);
-        c01.create_map(6);
+        c11.create_map(6);
         for (let x = 0; x < CHUNK_SIZE_X; x++) {
             for (let y = 0; y < CHUNK_SIZE_Y; y++) {
                 c11.set_block(1, x, y, CHUNK_SIZE_Z - 1);
