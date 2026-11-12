@@ -129,6 +129,28 @@ function get_leg_angles(id, animation_time) {
     };
 }
 
+function get_arm_angles(id, animation_time) {
+    const start_time = animation_time.get(id)?.leg ?? -1;
+    if (start_time === -1) {
+        return {
+            left: 0,
+            right: 0
+        };
+    }
+
+    const speed = 2;
+    const max_angle = deg2rad(30);
+
+    const a = performance.now() - start_time;
+
+    const angle = Math.sin((Math.PI * 2 * speed / 1000) * a) * max_angle;
+    
+    return {
+        left: angle,
+        right: -angle
+    };
+}
+
 const p_cube_ibo = create_ibo(gl, cube_mesh_index);
 const p_cube_position_vbo = create_vbo(gl, cube_mesh_position);
 const p_cube_color_vbo = create_vbo(gl, new Float32Array(96).fill(1.0));
@@ -230,13 +252,16 @@ function draw_players(players, id, animation_time) {
         set_attribute(gl, {
             "texture_coord": (p.team === "red" ? player_arm_texture_coord_red_vbo : player_arm_texture_coord_blue_vbo)
         }, attribute_locations, attribute_strides);
-
+        const arm_x_angle = get_arm_angles(p.id, animation_time);
+        
         //left
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
 
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, 0, 0);
+        Mat4.rotateX(m_matrix, m_matrix, arm_x_angle.left);
+        Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_ARM_Y / 2, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
 
@@ -248,10 +273,12 @@ function draw_players(players, id, animation_time) {
 
         //right
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y - PLAYER_MESH_ARM_Y / 2, p.pos.z);
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
 
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
         Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, 0, 0);
+        Mat4.rotateX(m_matrix, m_matrix, arm_x_angle.right);
+        Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_ARM_Y / 2, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
 
