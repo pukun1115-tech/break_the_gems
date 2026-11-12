@@ -147,6 +147,15 @@ export function place_block(chunks, players, player, type) {
                 break;
             }
 
+            if (
+                (previous_x === 1 && previous_y === 16 && previous_z === 1) ||
+                (previous_x === 1 && previous_y === 17 && previous_z === 1) ||
+                (previous_x === 30 && previous_y === 16 && previous_z === 30) ||
+                (previous_x === 30 && previous_y === 17 && previous_z === 30)
+            ) {
+                break;
+            }
+            
             const place_local_x = previous_x - place_chunk.x;
             const place_local_y = previous_y
             const place_local_z = previous_z - place_chunk.z;
