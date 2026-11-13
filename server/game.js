@@ -70,8 +70,8 @@ export class Game {
         blue: 0
     };
     static team_point = {
-        red: 0,
-        blue: 0
+        red: 8,
+        blue: 8
     };
     /**
      * @type {Map<string, Chunk>}
@@ -378,10 +378,16 @@ export class Game {
                                     block: result.block
                                 }));
                             }
-                        } else if (can_break_gem) {
+                        } else if (can_break_gem && ((player.team === "red" && target.block_type === 5) || (player.team === "blue" && target.block_type === 3))) {
                             const result = break_block(target.chunk_key, target.pos, Game.chunks);
                             if (result !== null) {
                                 state.break_gem_time = Game.time;
+
+                                if (player.team === "red") {
+                                    Game.team_point.blue--;
+                                } else {
+                                    Game.team_point.red--;
+                                }
 
                                 Game.broadcast(JSON.stringify({
                                     type: "update_map",
