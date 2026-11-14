@@ -210,7 +210,7 @@ function draw_chunks(chunks) {
 function draw_players(players, id, animation_time) {
     gl.bindTexture(gl.TEXTURE_2D, player_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     set_attribute(gl, {
         "position": p_cube_position_vbo,
         "color": p_cube_color_vbo,
@@ -344,6 +344,12 @@ function draw_players(players, id, animation_time) {
         gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
         gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
     }
+}
+
+export function draw_arm(id, animation_time) {
+    gl.disable(gl.DEPTH_TEST);
+    Mat4.lookAt(v_matrix, [0, 0, 0], [0, 0, 1], [0, 1, 0]);
+    gl.enable(gl.DEPTH_TEST);
 }
 
 export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time) {
