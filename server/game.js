@@ -21,45 +21,62 @@ import { find_target, break_block, place_block } from "./break_place_block.js";
 export class Game {
     static time = 0;
     /**
-     * @type {Map<string, {
-     *     id: string,
-     *     hp: number,
-     *     team: "red" | "blue",
-     *     pos: {
-     *         x: number,
-     *         y: number,
-     *         z: number
-     *     },
-     *     rot: {
-     *         x: number,
-     *         y: number,
-     *         z: number
-     *     },
-     *     animation: {
-     *         walking: boolean,
-     *         hit: boolean
-     *     }
-     * }>} 
+     * @type {
+     *     Map<
+     *         string,
+     *         {
+     *             id: string,
+     *             hp: number,
+     *             team: "red" | "blue",
+     *             pos: {
+     *                 x: number,
+     *                 y: number,
+     *                 z: number
+     *             },
+     *             rot: {
+     *                 x: number,
+     *                 y: number,
+     *                 z: number
+     *             },
+     *             animation: {
+     *                 walking: boolean,
+     *                 hit: boolean
+     *             }
+     *         }
+     *     >
+     * } 
      */
     static players = new Map();
+    
     /**
-     * @type {Map<string, {
-     *     key_inputs: Record<string, boolean>,
-     *     mouse_inputs: {
-     *         left_click: boolean,
-     *         right_click: boolean
-     *     }
-     * }>}
+     * @type {
+     *     Map<
+     *         string,
+     *         {
+     *             key_inputs: Record<string, boolean>,
+     *             mouse_inputs: {
+     *                 left_click: boolean,
+     *                 right_click: boolean
+     *             }
+     *         }
+     *     >
+     * }
      */
     static player_inputs = new Map();
+    
     /**
-     * @type {Map<string, {
-     *     break_time: number,
-     *     break_gem_time: number,
-     *     place_time: number,
-     *     attack_time: number,
-     *     velocity_y: number
-     * }>}
+     * @type {
+     *     Map<
+     *         string,
+     *         {
+     *             break_time: number,
+     *             break_gem_time: number,
+     *             place_time: number,
+     *             attack_time: number,
+     *             velocity_y: number
+     *         }
+     *     >
+     * }
      */
     static players_states = new Map();
 
@@ -73,6 +90,7 @@ export class Game {
         red: 8,
         blue: 8
     };
+    
     /**
      * @type {Map<string, Chunk>}
      */
@@ -201,6 +219,7 @@ export class Game {
         const id = Game.create_player_id(6);
         const count = Game.player_count;
         const team = (count.red === count.blue ? (Math.random() > 0.5 ? "red" : "blue") : (count.red > count.blue ? "blue" : "red"));
+        
         Game.players_states.set(id, {
             break_time: Game.time - BREAK_COOLDOWN,
             break_gem_time: Game.time - BREAK_GEM_COOLDOWN,
@@ -208,6 +227,7 @@ export class Game {
             attack_time: Game.time - ATTACK_COOLDOWN,
             velocity_y: 0,
         });
+        
         Game.players.set(id, {
             id: id,
             hp: 100,
@@ -244,7 +264,6 @@ export class Game {
     static remove_player(socket) {
         const id = Game.ids_by_socket.get(socket);
         if (id === undefined) {
-            console.log("cannot get id by socket; at Game.remove_player");
             return;
         }
 
@@ -416,26 +435,35 @@ export class Game {
     static handle_received_text(socket, text) {
         const id = Game.ids_by_socket.get(socket);
         if (id === undefined) {
-            console.log("cannot get id by socket");
+            Game.remove_player(socket);
+            socket.destroy();
             return;
         }
+        
         let message = null;
         try {
             message = JSON.parse(text);
         } catch (error) {
             console.log("invalid message: cannot parse");
+            console.log("message: ", text);
+            Game.remove_player(socket);
+            socket.destroy();
             return;
         }
 
         if (message === null || typeof message !== "object" || Array.isArray(message)) {
             console.log("invalid message: not an object");
-            console.log("message:", message);
+            console.log("message: ", message);
+            Game.remove_player(socket);
+            socket.destroy();
             return;
         }
 
         if (!Object.hasOwn(message, "type")) {
             console.log("invalid message: missing type");
-            console.log("message:", message);
+            console.log("message: ", message);
+            Game.remove_player(socket);
+            socket.destroy();
             return;
         }
 
@@ -446,6 +474,8 @@ export class Game {
                 !Object.hasOwn(message.input.mouse_inputs, "left_click") ||
                 !Object.hasOwn(message.input.mouse_inputs, "right_click")
             ) {
+                console.log("invalid message");
+                console.log("message: ", message);
                 Game.remove_player(socket);
                 socket.destroy();
                 return;
@@ -458,6 +488,8 @@ export class Game {
                 !Object.hasOwn(message.rot, "y") ||
                 !Object.hasOwn(message.rot, "z")
             ) {
+                console.log("invalid message");
+                console.log("message: ", message);
                 Game.remove_player(socket);
                 socket.destroy();
                 return;
@@ -466,8 +498,8 @@ export class Game {
             Game.players.get(id).rot.y = (Number.isFinite(message.rot.y) ? message.rot.y : 0);
             Game.players.get(id).rot.z = (Number.isFinite(message.rot.z) ? message.rot.z : 0);
         } else {
-            console.log(`invalid message: unknown message type ${message.type}`);
-            console.log("message:", message);
+            console.log("invalid message: unknown message type");
+            console.log("message: ", message);
             return;
         }
     }
