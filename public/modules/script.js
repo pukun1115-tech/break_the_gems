@@ -1,6 +1,6 @@
-import { FPS, WEBSOCKET_PROTOCOL } from "./config.js";
+import { WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
-import { player_update, get_local_player, set_local_player_rot } from "./player.js";
+import { player_update, get_local_player, set_local_player_rot, get_interpolated_players } from "./player.js";
 import { gl_draw, gl_canvas } from "./gl_draw.js";
 import { ui_draw, ui_canvas } from "./ui_draw.js";
 
@@ -8,10 +8,11 @@ const socket = new WebSocket(`${WEBSOCKET_PROTOCOL}//${window.location.host}`);
 
 let id = null;
 let players = new Map();
+const snapshots = [];
 let team_point = null;
 let time = 0;
 let attack_time = -3;
-/** @type{Map<string, { walking: boolean, hit: boolean }>} */
+/** @type{Map<string, { walking: number, hit: number }>} */
 let animation_time = new Map();
 
 /** @type {Map<string, Chunk>} */
@@ -84,33 +85,44 @@ socket.addEventListener("message", (event) => {
         players.delete(data.id);
         animation_time.delete(data.id);
     } else if (data.type === "update_players") {
+        players = new Map(data.players.map((p) => {
+            return [p.id, p];
+        }));
+
+        snapshots.push({
+            received_at: performance.now(),
+            players: data.players
+        });
+
+        while (snapshots.length > 6) {
+            snapshots.shift();
+        }
+
         for (const p of data.players) {
             const animation = animation_time.get(p.id);
+            if (animation === undefined) {
+                animation_time.set(p.id, {
+                    walking: (p.animation.walking ? performance.now() : -1),
+                    hit: (p.animation.hit ? performance.now() : -1)
+                });
+                continue;
+            }
+
             if (p.animation.walking) {
-                const player = players.get(p.id);
-                if (player !== undefined) {
-                    if (player.animation.walking === false) {
-                        animation.walking = performance.now();
-                    }
+                if (animation.walking === -1) {
+                    animation.walking = performance.now();
                 }
             } else {
                 animation.walking = -1;
             }
 
             if (p.animation.hit) {
-                const player = players.get(p.id);
-                if (player !== undefined) {
-                    if (player.animation.hit === false) {
-                        animation.hit = performance.now();
-                    }
+                if (animation.hit === -1) {
+                    animation.hit = performance.now();
                 }
             } else {
                 animation.hit = -1;
             }
-        }
-        players.clear();
-        for (const p of data.players) {
-            players.set(p.id, p);
         }
     } else if (data.type === "update_map") {
         chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block;
@@ -215,8 +227,6 @@ function send_rot(player) {
     }));
 }
 
-
-
 function main_loop() {
     if (id !== null) {
         time++;
@@ -228,10 +238,10 @@ function main_loop() {
         send_input();
         send_rot(get_local_player());
         //draw
-        const pos = players.get(id).pos;
+        const pos = get_interpolated_players(performance.now(), snapshots, players).find((p) => p.id === id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        gl_draw(pos, rot, FOV, chunks, players.values(), id, animation_time);
+        gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_time);
         ui_draw(players.get(id).hp, (attack_time + 3 > time));
         //dev
         /*
@@ -240,9 +250,9 @@ function main_loop() {
         */
     }
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         main_loop();
-    }, 1000 / FPS);
+    });
 }
 
 main_loop();

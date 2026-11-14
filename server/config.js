@@ -48,7 +48,7 @@ export const MAX_BUFFER_SIZE = 512 * 512;
 
 //Game
 export const MAX_PLAYERS = 6;
-export const FPS = 60;
+export const FPS = 20;
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
