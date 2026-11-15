@@ -32,21 +32,6 @@ window.addEventListener("beforeunload", () => {
 });
 
 socket.addEventListener("close", (event) => {
-    if (event.code === 1013) {
-        document.body.innerHTML = `
-            <h1>ゲームが満員です。あとでやり直してください。</h1>
-            <h2>pukun1115-techの他のゲーム</h2>
-            <ul>
-                <li><a href="https://paint-ball.onrender.com">paint-ball</a></li>
-                <li><a href="https://pukun1115-tech.github.io/tower-defense/">tower-defense</a></li>
-            </ul>
-            <h2>bloxd.ioをやろう!</h2>
-            <ul>
-                <li><a href="https://bloxd.io">bloxd.io</a></li>
-            </ul>
-            <p><a href="https://github.com/pukun1115-tech">pukun1115-tech</a></p>
-        `;
-    }
     console.log("disconnected from server");
     console.log(`code: ${event.code}`);
     console.log(`reason: ${event.reason}`);
@@ -141,6 +126,20 @@ socket.addEventListener("message", (event) => {
         chunks.get(data.chunk_key).generate_mesh();
     } else if (data.type === "attack") {
         attack_time = time;
+    } else if (data.type === "full") {
+        document.body.innerHTML = `
+            <h1>ゲームが満員です。あとでやり直してください。</h1>
+            <h2>pukun1115-techの他のゲーム</h2>
+            <ul>
+                <li><a href="https://paint-ball.onrender.com">paint-ball</a></li>
+                <li><a href="https://pukun1115-tech.github.io/tower-defense/">tower-defense</a></li>
+            </ul>
+            <h2>bloxd.ioをやろう!</h2>
+            <ul>
+                <li><a href="https://bloxd.io">bloxd.io</a></li>
+            </ul>
+            <p><a href="https://github.com/pukun1115-tech">pukun1115-tech</a></p>
+        `;
     }
 });
 

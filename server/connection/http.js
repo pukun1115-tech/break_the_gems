@@ -9,9 +9,8 @@ import {
     ALLOWED_ORIGINS,
     MAX_PLAYERS
 } from "../config.js";
-import { send_close_frame } from "./socket.js";
+import { send_close_frame, send_text_frame } from "./socket.js";
 import { Game } from "../game.js";
-
 
 export function create_http_server(request, response) {
     const request_url = (request.url === "/" ? "/index.html" : request.url);
@@ -65,7 +64,9 @@ export function server_on_upgrade(request, socket) {
     );
     socket.write(response);
     if (Game.players.size >= MAX_PLAYERS) {
-        send_close_frame(socket, 1013, "混んでます");
+        send_text_frame(socket, JSON.stringify({ type: "full" }));
+        //1013 try again later
+        send_close_frame(socket, 1013, "full");
         socket.end();
         return;
     }
