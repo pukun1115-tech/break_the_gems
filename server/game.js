@@ -371,6 +371,10 @@ export class Game {
 
             player.pos.y = next_y;
 
+            player.pos.x = Math.floor(player.pos.x * 100) / 100;
+            player.pos.y = Math.floor(player.pos.y * 100) / 100;
+            player.pos.z = Math.floor(player.pos.z * 100) / 100;
+
             //break and place block
             if (input.mouse_inputs.left_click) {
                 const can_break = (state.break_time + BREAK_COOLDOWN <= Game.time);
