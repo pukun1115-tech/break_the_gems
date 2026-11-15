@@ -62,8 +62,16 @@ export function check_player_chunk_collision(chunks, px, py, pz, crouch) {
     return false;
 }
 
-export function is_on_ground(chunks, px, py, pz) {
-    return check_player_chunk_collision(chunks, px, py - 0.01, pz);
+/**
+ * @param {Map<string, Chunk>} chunks
+ * @param {number} px
+ * @param {number} py
+ * @param {number} pz
+ * @param {boolean} crouch
+ * @returns {boolean}
+ */
+export function is_on_ground(chunks, px, py, pz, crouch) {
+    return check_player_chunk_collision(chunks, px, py - 0.01, pz, crouch);
 }
 
 /**
