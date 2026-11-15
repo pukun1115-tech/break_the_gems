@@ -18,59 +18,56 @@ import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
 /**
- * @typedef {Object} player
+ * @typedef {Object} Point3D
+ * @property {number} x
+ * @property {number} y
+ * @property {number} z
+ */
+
+/**
+ * @typedef {string} ID
+ */
+
+/**
+ * @typedef {Object} Player
+ * @property {ID} id
+ * @property {number} hp
+ * @property {"red | "blue"} team
+ * @property {boolean} crouch
+ * @property {Point3D} pos
+ * @property {Point3D} rot
+ * @property {{ walking: boolean, hit: boolean }} animation
+ */
+
+/**
+ * @typedef {Object} PlayerInput
+ * @property {Record<string, boolean>} key_inputs
+ * @property {{ left_click: boolean, right_click: boolean }} mouse_inputs
+ */
+
+/**
+ * @typedef {Object} PlayerState
+ * @property {number} break_time
+ * @property {number} break_gem_time
+ * @property {number} place_time
+ * @property {number} attack_time
+ * @property {number} velocity_y
  */
 
 export class Game {
     static time = 0;
-    /**
-     * @type {Map<string, { 
-     *         id: string,
-     *         hp: number,
-     *         team: "red" | "blue",
-     *         pos: { x: number, y: number, z: number },
-     *         rot: { x: number, y: number, z: number },
-     *         animation: { walking: boolean, hit: boolean },
-     *         crouch: boolean
-     *     }>
-     * } 
-     */
+    /** @type {Map<ID, Player} */
     static players = new Map();
     
-    /**
-     * @type {
-     *     Map<
-     *         string,
-     *         {
-     *             key_inputs: Record<string, boolean>,
-     *             mouse_inputs: {
-     *                 left_click: boolean,
-     *                 right_click: boolean
-     *             }
-     *         }
-     *     >
-     * }
-     */
+    /** @type {Map<ID, PlayerInput>} */
     static player_inputs = new Map();
     
-    /**
-     * @type {
-     *     Map<
-     *         string,
-     *         {
-     *             break_time: number,
-     *             break_gem_time: number,
-     *             place_time: number,
-     *             attack_time: number,
-     *             velocity_y: number
-     *         }
-     *     >
-     * }
-     */
+    /** @type {Map<ID, PlayerState>} */
     static players_states = new Map();
 
     static sockets_by_id = new Map();
     static ids_by_socket = new Map();
+    
     static player_count = {
         red: 0,
         blue: 0
@@ -80,9 +77,7 @@ export class Game {
         blue: 8
     };
     
-    /**
-     * @type {Map<string, Chunk>}
-     */
+    /** @type {Map<string, Chunk>} */
     static chunks = new Map();
 
     static init_chunks() {
@@ -199,6 +194,10 @@ export class Game {
         Game.chunks.set(get_chunk_key(1, 1), c11);
     }
 
+    /**
+     * @param {number} length
+     * @returns {ID}
+     */
     static create_player_id(length) {
         const t = Math.random().toString(36).substring(2, 2 + length);
         return t.charAt(0).toUpperCase() + t.slice(1);
@@ -221,6 +220,7 @@ export class Game {
             id: id,
             hp: 100,
             team: team,
+            crouch: false,
             pos: (team === "red" ? { x: 1.5, y: 16, z: 1.5 } : { x: 30.5, y: 16, z: 30.5 }),
             rot: (team === "red" ? { x: 0, y: 45, z: 0 } : { x: 0, y: -135, z: 0 }),
             animation: { walking: false, hit: false }
@@ -271,6 +271,10 @@ export class Game {
         Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
     }
 
+    /**
+     * @param {ID} id
+     * @param {number} amount
+     */
     static add_player_hp(id, amount) {
         const p = Game.players.get(id);
         if (p === undefined) {
@@ -286,7 +290,7 @@ export class Game {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
             const state = Game.players_states.get(id);
-            if (!input || !player || !state) {
+            if (input === undefined || player === undefined || state === undefined) {
                 continue;
             }
 
@@ -328,7 +332,7 @@ export class Game {
             //velocity_y
             state.velocity_y -= GRAVITY * delta_time;
 
-            if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z)) {
+            if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z, player.crouch)) {
                 state.velocity_y = 0;
 
                 if (input.key_inputs["Space"] === true) {
@@ -417,6 +421,7 @@ export class Game {
                     }
                 }
             }
+            
             if (input.mouse_inputs.right_click) {
                 if (state.place_time + PLACE_COOLDOWN <= Game.time) {
                     state.place_time = Game.time;
@@ -426,6 +431,7 @@ export class Game {
                     }
                 }
             }
+            
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
     }
