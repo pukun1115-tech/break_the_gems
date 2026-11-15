@@ -220,9 +220,9 @@ function send_rot(player) {
     socket.send(JSON.stringify({
         type: "rot",
         rot: {
-            x: player.rot.x,
-            y: player.rot.y,
-            z: player.rot.z
+            x: Math.floor(player.rot.x * 10) / 10,
+            y: Math.floor(player.rot.y * 10) / 10,
+            z: Math.floor(player.rot.z * 10) / 10
         }
     }));
 }
