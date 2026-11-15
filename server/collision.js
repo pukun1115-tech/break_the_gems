@@ -5,6 +5,7 @@ import {
 
     PLAYER_HIT_X,
     PLAYER_HIT_Y,
+    PLAYER_HIT_Y_CROUCH,
     PLAYER_HIT_Z
 } from "./config.js";
 
@@ -14,12 +15,13 @@ import {
  * @param {number} px
  * @param {number} py
  * @param {number} pz
+ * @param {boolean} crouch
  * @returns {boolean}
  */
-export function check_player_chunk_collision(chunks, px, py, pz) {
+export function check_player_chunk_collision(chunks, px, py, pz, crouch) {
     const p_max_x = px + PLAYER_HIT_X / 2;
     const p_min_x = px - PLAYER_HIT_X / 2;
-    const p_max_y = py + PLAYER_HIT_Y;
+    const p_max_y = py + (!crouch ? PLAYER_HIT_Y : PLAYER_HIT_Y_CROUCH);
     const p_min_y = py;
     const p_max_z = pz + PLAYER_HIT_Z / 2;
     const p_min_z = pz - PLAYER_HIT_Z / 2;

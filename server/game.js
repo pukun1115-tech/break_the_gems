@@ -17,33 +17,22 @@ import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
+/**
+ * @typedef {Object} player
+ */
 
 export class Game {
     static time = 0;
     /**
-     * @type {
-     *     Map<
-     *         string,
-     *         {
-     *             id: string,
-     *             hp: number,
-     *             team: "red" | "blue",
-     *             pos: {
-     *                 x: number,
-     *                 y: number,
-     *                 z: number
-     *             },
-     *             rot: {
-     *                 x: number,
-     *                 y: number,
-     *                 z: number
-     *             },
-     *             animation: {
-     *                 walking: boolean,
-     *                 hit: boolean
-     *             }
-     *         }
-     *     >
+     * @type {Map<string, { 
+     *         id: string,
+     *         hp: number,
+     *         team: "red" | "blue",
+     *         pos: { x: number, y: number, z: number },
+     *         rot: { x: number, y: number, z: number },
+     *         animation: { walking: boolean, hit: boolean },
+     *         crouch: boolean
+     *     }>
      * } 
      */
     static players = new Map();
@@ -326,21 +315,15 @@ export class Game {
                 next_z += PLAYER_MOVE_SPEED * delta_time * siny;
             }
 
-            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z)) {
+            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
                 player.pos.x = next_x;
             }
-            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z)) {
+            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
                 player.pos.z = next_z;
             }
 
-            player.animation.walking = (
-                input.key_inputs["KeyW"] === true ||
-                input.key_inputs["KeyA"] === true ||
-                input.key_inputs["KeyS"] === true ||
-                input.key_inputs["KeyD"] === true
-            );
-
-            player.animation.hit = input.mouse_inputs.left_click;
+            //crouch
+            player.crouch = (input.key_inputs["KeyC"] === true);
 
             //velocity_y
             state.velocity_y -= GRAVITY * delta_time;
@@ -355,13 +338,13 @@ export class Game {
 
             next_y = player.pos.y + state.velocity_y * delta_time;
 
-            if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
+            if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
                 if (state.velocity_y < 0) {
-                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
+                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
                         next_y += 0.005;
                     }
                 } else {
-                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z)) {
+                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
                         next_y -= 0.005;
                     }
                 }
@@ -371,9 +354,20 @@ export class Game {
 
             player.pos.y = next_y;
 
+            //小数第2位まで
             player.pos.x = Math.floor(player.pos.x * 100) / 100;
             player.pos.y = Math.floor(player.pos.y * 100) / 100;
             player.pos.z = Math.floor(player.pos.z * 100) / 100;
+
+            //animation
+            player.animation.walking = (
+                input.key_inputs["KeyW"] === true ||
+                input.key_inputs["KeyA"] === true ||
+                input.key_inputs["KeyS"] === true ||
+                input.key_inputs["KeyD"] === true
+            );
+
+            player.animation.hit = input.mouse_inputs.left_click;
 
             //break and place block
             if (input.mouse_inputs.left_click) {

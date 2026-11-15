@@ -55,6 +55,7 @@ export const CHUNK_SIZE_Z = 16;
 
 export const PLAYER_HIT_X = 0.4;
 export const PLAYER_HIT_Y = 1.6;
+export const PLAYER_HIT_Y_CROUCH = 1.2;
 export const PLAYER_HIT_Z = 0.4;
 export const PLAYER_EYE_Y = 1.4;
 
