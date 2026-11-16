@@ -59,6 +59,7 @@ export const PLAYER_HIT_Y = 1.6;
 export const PLAYER_HIT_Y_CROUCH = 1.2;
 export const PLAYER_HIT_Z = 0.4;
 export const PLAYER_EYE_Y = 1.4;
+export const PLAYER_EYE_Y_CROUCH = 1.0;
 
 export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
