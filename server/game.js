@@ -294,7 +294,13 @@ export class Game {
             }
 
             //crouch
-            player.crouch = (input.key_inputs["KeyC"] === true);
+            if (player.crouch && input.key_inputs["KeyC"] !== true) {
+                if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false)) {
+                    player.crouch = false;
+                }
+            } else {
+                player.crouch = (input.key_inputs["KeyC"] === true);
+            }
 
             //velocity_y
             state.velocity_y -= GRAVITY * delta_time;
