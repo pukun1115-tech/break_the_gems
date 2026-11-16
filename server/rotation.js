@@ -1,3 +1,5 @@
+/** @import { Vec3 } from "./types.js" */
+
 /**
  * @description 度数からラジアンに変換
  * @param {number} d
@@ -9,21 +11,9 @@ export function deg2rad(d) {
 
 /**
  * @description 3次元ベクトルをx軸, y軸, z軸の順に反時計回りに回転
- * @param {{
- *     x: number,
- *     y:number,
- *     z:number
- * }} vector
- * @param {{
- *     x:number,
- *     y:number,
- *     z:number
- * }} rotation
- * @returns {{
- *     x:number,
- *     y:number,
- *     z:number
- * }}
+ * @param {Vec3} vector
+ * @param {Vec3} rotation
+ * @returns {Vec3}
  */
 export function rotate_vector_XYZ(vector, rotation) {
     const { x: rx, y: ry, z: rz } = rotation;
@@ -55,21 +45,9 @@ export function rotate_vector_XYZ(vector, rotation) {
 
 /**
  * @description 3次元ベクトルをz軸, y軸, x軸の順に反時計回りに回転
- * @param {{
- *     x: number,
- *     y:number,
- *     z:number
- * }} vector
- * @param {{
- *     x:number,
- *     y:number,
- *     z:number
- * }} rotation
- * @returns {{
- *     x:number,
- *     y:number,
- *     z:number
- * }}
+ * @param {Vec3} vector
+ * @param {Vec3} rotation
+ * @returns {Vec3}
  */
 export function rotate_vector_ZYX(vector, rotation) {
     const { x: rx, y: ry, z: rz } = rotation;
