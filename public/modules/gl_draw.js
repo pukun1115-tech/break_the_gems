@@ -189,7 +189,7 @@ const mvp_matrix = Mat4.identity(Mat4.create());
 function draw_chunks(chunks) {
     gl.bindTexture(gl.TEXTURE_2D, block_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     for (const c of chunks.values()) {
         set_attribute(gl, {
             "position": c.position_vbo,
