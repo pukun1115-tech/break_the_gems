@@ -208,7 +208,9 @@ export class Game {
             players: Array.from(Game.players.values()),
             team_point: Game.team_point,
             chunks: Object.fromEntries(
-                Array.from(Game.chunks, ([key, chunk]) => [key, chunk.map])
+                Array.from(Game.chunks, ([key, c]) => {
+                    return [key, c.map];
+                })
             )
         }));
 
