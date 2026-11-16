@@ -33,34 +33,13 @@ export function create_http_server(request, response) {
     });
 }
 
-function is_same_origin(request, origin) {
-    if (typeof request.headers.host !== "string") {
-        return false;
-    }
-
-    const protocol = (
-        typeof request.headers["x-forwarded-proto"] === "string"
-            ? request.headers["x-forwarded-proto"].split(",")[0].trim()
-            : (request.socket.encrypted ? "https" : "http")
-    );
-
-    try {
-        const origin_url = new URL(origin);
-        return (
-            origin_url.protocol === `${protocol}:` &&
-            origin_url.host === request.headers.host
-        );
-    } catch {
-        return false;
-    }
-}
-
 export function server_on_upgrade(request, socket) {
     const origin = request.headers["origin"];
+    console.log(origin);
 
     if (
         typeof origin !== "string" ||
-        (!ALLOWED_ORIGINS.has(origin) && !is_same_origin(request, origin))
+        !ALLOWED_ORIGINS.has(origin)
     ) {
         socket.write(
             "HTTP/1.1 403 Forbidden\r\n" +
