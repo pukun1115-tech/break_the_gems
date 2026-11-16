@@ -73,7 +73,7 @@ export function check_player_chunk_collision(chunks, px, py, pz, crouch) {
  * @returns {boolean}
  */
 export function is_on_ground(chunks, px, py, pz, crouch) {
-    return check_player_chunk_collision(chunks, px, py - 0.01, pz, crouch);
+    return check_player_chunk_collision(chunks, px, py - 0.02, pz, crouch);
 }
 
 /**
