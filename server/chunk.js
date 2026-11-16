@@ -50,6 +50,7 @@ export class Chunk {
                         type: fill_type,
                         stage: 8
                     };
+                }
             }
         }
     }
