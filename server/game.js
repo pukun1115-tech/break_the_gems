@@ -17,57 +17,22 @@ import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
-/**
- * @typedef {Object} Point3D
- * @property {number} x
- * @property {number} y
- * @property {number} z
- */
-
-/**
- * @typedef {string} ID
- */
-
-/**
- * @typedef {Object} Player
- * @property {ID} id
- * @property {number} hp
- * @property {"red | "blue"} team
- * @property {boolean} crouch
- * @property {Point3D} pos
- * @property {Point3D} rot
- * @property {{ walking: boolean, hit: boolean }} animation
- */
-
-/**
- * @typedef {Object} PlayerInput
- * @property {Record<string, boolean>} key_inputs
- * @property {{ left_click: boolean, right_click: boolean }} mouse_inputs
- */
-
-/**
- * @typedef {Object} PlayerState
- * @property {number} break_time
- * @property {number} break_gem_time
- * @property {number} place_time
- * @property {number} attack_time
- * @property {number} velocity_y
- */
+/** @import { ID, Player, PlayerInput, PlayerState } from "./type.js" */
 
 export class Game {
     static time = 0;
     /** @type {Map<ID, Player} */
     static players = new Map();
-    
+
     /** @type {Map<ID, PlayerInput>} */
     static player_inputs = new Map();
-    
+
     /** @type {Map<ID, PlayerState>} */
     static players_states = new Map();
 
     static sockets_by_id = new Map();
     static ids_by_socket = new Map();
-    
+
     static player_count = {
         red: 0,
         blue: 0
@@ -76,7 +41,7 @@ export class Game {
         red: 8,
         blue: 8
     };
-    
+
     /** @type {Map<string, Chunk>} */
     static chunks = new Map();
 
@@ -207,7 +172,7 @@ export class Game {
         const id = Game.create_player_id(6);
         const count = Game.player_count;
         const team = (count.red === count.blue ? (Math.random() > 0.5 ? "red" : "blue") : (count.red > count.blue ? "blue" : "red"));
-        
+
         Game.players_states.set(id, {
             break_time: Game.time - BREAK_COOLDOWN,
             break_gem_time: Game.time - BREAK_GEM_COOLDOWN,
@@ -215,7 +180,7 @@ export class Game {
             attack_time: Game.time - ATTACK_COOLDOWN,
             velocity_y: 0,
         });
-        
+
         Game.players.set(id, {
             id: id,
             hp: 100,
@@ -421,7 +386,7 @@ export class Game {
                     }
                 }
             }
-            
+
             if (input.mouse_inputs.right_click) {
                 if (state.place_time + PLACE_COOLDOWN <= Game.time) {
                     state.place_time = Game.time;
@@ -431,7 +396,7 @@ export class Game {
                     }
                 }
             }
-            
+
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
     }
@@ -443,7 +408,7 @@ export class Game {
             socket.destroy();
             return;
         }
-        
+
         let message = null;
         try {
             message = JSON.parse(text);
