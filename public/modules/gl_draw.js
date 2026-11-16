@@ -363,7 +363,7 @@ export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time) {
     const center = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
     const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
 
-    Mat4.lookAt(v_matrix, [pos.x, pos.y + PLAYER_EYE_Y, pos.z], [pos.x + center.x, pos.y + PLAYER_EYE_Y + center.y, pos.z + center.z], [up.x, up.y, up.z]);
+    Mat4.lookAt(v_matrix, [pos.x, pos.y + (!players.get(id).crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH), pos.z], [pos.x + center.x, pos.y + (!players.get(id).crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH) + center.y, pos.z + center.z], [up.x, up.y, up.z]);
     Mat4.perspective(p_matrix, deg2rad(FOV), gl_canvas.width / gl_canvas.height, 0.01, 1000);
 
     draw_chunks(chunks);

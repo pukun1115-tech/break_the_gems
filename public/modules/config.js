@@ -7,6 +7,7 @@ export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
 
 export const PLAYER_EYE_Y = 1.4;
+export const PLAYER_EYE_Y_CROUCH = 1.0;
 
 export const MOUSE_SENSITIVITY = 0.05;
 
