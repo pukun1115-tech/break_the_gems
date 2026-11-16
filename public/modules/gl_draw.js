@@ -16,7 +16,8 @@ import {
 import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Mat4 } from "./matrix.js";
 import {
-    PLAYER_EYE_Y
+    PLAYER_EYE_Y,
+    PLAYER_EYE_Y_CROUCH
 } from "./config.js";
 import {
     cube_mesh_index,
