@@ -3,7 +3,8 @@ import {
     CHUNK_SIZE_Y,
     CHUNK_SIZE_Z,
 
-    PLAYER_EYE_Y
+    PLAYER_EYE_Y,
+    PLAYER_EYE_Y_CROUCH
 } from "./config.js";
 import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Chunk, get_chunk_key } from "./chunk.js";
@@ -21,6 +22,8 @@ import {
  * @returns {{ type: "break_block", chunk_key: string, pos: Vec3, block: { type: number, stage: number }, block_type: number } | { type: "hit", id: ID } | null}
  */
 export function find_target(chunks, player, players) {
+    const eye_y = (!player.crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
+    
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -33,7 +36,7 @@ export function find_target(chunks, player, players) {
 
     for (let distance = 0; distance <= break_max_distance; distance += ray_step) {
         const ray_x = player.pos.x + direction.x * distance;
-        const ray_y = player.pos.y + PLAYER_EYE_Y + direction.y * distance;
+        const ray_y = player.pos.y + eye_y + direction.y * distance;
         const ray_z = player.pos.z + direction.z * distance;
 
         if (distance <= attack_max_distance) {
@@ -106,6 +109,8 @@ export function break_block(chunk_key, pos, chunks) {
  * @returns {{ chunk_key: string, pos: Vec3, block: { type: number, stage: number } } | null}
  */
 export function place_block(chunks, players, player, type) {
+    const eye_y = (!player.crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
+    
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -120,7 +125,7 @@ export function place_block(chunks, players, player, type) {
 
     for (let distance = 0; distance <= max_distance; distance += ray_step) {
         const ray_x = player.pos.x + direction.x * distance;
-        const ray_y = player.pos.y + PLAYER_EYE_Y + direction.y * distance;
+        const ray_y = player.pos.y + eye_y + direction.y * distance;
         const ray_z = player.pos.z + direction.z * distance;
 
         const hit_block_x = Math.floor(ray_x);
