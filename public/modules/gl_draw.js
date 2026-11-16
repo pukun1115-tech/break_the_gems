@@ -17,7 +17,8 @@ import { deg2rad, rotate_vector_XYZ } from "./rotation.js";
 import { Mat4 } from "./matrix.js";
 import {
     PLAYER_EYE_Y,
-    PLAYER_EYE_Y_CROUCH
+    PLAYER_EYE_Y_CROUCH,
+    PLAYER_CROUCH_ANGLE
 } from "./config.js";
 import {
     cube_mesh_index,
@@ -154,14 +155,14 @@ function get_arm_angles(id, animation_time) {
         const walk_a = performance.now() - walk_start_time;
         const walk_angle = Math.sin((Math.PI * 2 * (walk_arm_speed / 1000)) * walk_a) * walk_max_angle;
         if (hit_start_time === -1) {
-            angle.left -= walk_angle;
+            angle.right -= walk_angle;
         }
-        angle.right += walk_angle;
+        angle.left += walk_angle;
     }
     if (hit_start_time !== -1) {
         const hit_a = performance.now() - hit_start_time;
         const hit_angle = (Math.sin((Math.PI * 2 * (hit_arm_speed / 1000)) * hit_a) + 1) * 0.5 * hit_max_angle;
-        angle.left -= hit_angle;
+        angle.right -= hit_angle;
     }
 
     return angle;
@@ -230,9 +231,16 @@ function draw_players(players, id, animation_time) {
         }, attribute_locations, attribute_strides);
 
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
-
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
+        if (p.crouch) {
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(PLAYER_CROUCH_ANGLE));
+            Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_BODY_Y, 0);
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(-PLAYER_CROUCH_ANGLE));
+        } else {
+            Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_BODY_Y, 0);
+        }
+
         Mat4.rotateX(m_matrix, m_matrix, deg2rad(p.rot.x));
         Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_HEAD_Y / 2, 0);
 
@@ -251,9 +259,14 @@ function draw_players(players, id, animation_time) {
         }, attribute_locations, attribute_strides);
 
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y / 2, p.pos.z);
-
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
+        if (p.crouch) {
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(PLAYER_CROUCH_ANGLE));
+            Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_BODY_Y / 2, 0);
+        } else {
+            Mat4.translate(m_matrix, m_matrix, 0, PLAYER_MESH_BODY_Y / 2, 0);
+        }
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_BODY_X, PLAYER_MESH_BODY_Y, PLAYER_MESH_BODY_Z);
 
@@ -270,13 +283,18 @@ function draw_players(players, id, animation_time) {
         }, attribute_locations, attribute_strides);
         const arm_x_angle = get_arm_angles(p.id, animation_time);
 
-        //left
+        //right
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
-
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
-        Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, 0, 0);
-        Mat4.rotateX(m_matrix, m_matrix, arm_x_angle.left);
+        if (p.crouch) {
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(PLAYER_CROUCH_ANGLE));
+            Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, PLAYER_MESH_BODY_Y, 0);
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(-PLAYER_CROUCH_ANGLE));
+        } else {
+            Mat4.translate(m_matrix, m_matrix, -PLAYER_MESH_LEG_X - PLAYER_MESH_ARM_X / 2, PLAYER_MESH_BODY_Y, 0);
+        }
+        Mat4.rotateX(m_matrix, m_matrix, arm_x_angle.right);
         Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_ARM_Y / 2, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
@@ -287,13 +305,18 @@ function draw_players(players, id, animation_time) {
         gl.uniformMatrix4fv(uniform_locations["mvp_matrix"], false, mvp_matrix);
         gl.drawElements(gl.TRIANGLES, cube_mesh_index_count, gl.UNSIGNED_SHORT, 0);
 
-        //right
+        //left
         Mat4.identity(m_matrix);
-        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y + PLAYER_MESH_BODY_Y, p.pos.z);
-
+        Mat4.translate(m_matrix, m_matrix, p.pos.x, p.pos.y + PLAYER_MESH_LEG_Y, p.pos.z);
         Mat4.rotateY(m_matrix, m_matrix, deg2rad(p.rot.y));
-        Mat4.translate(m_matrix, m_matrix, PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, 0, 0);
-        Mat4.rotateX(m_matrix, m_matrix, arm_x_angle.right);
+        if (p.crouch) {
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(PLAYER_CROUCH_ANGLE));
+            Mat4.translate(m_matrix, m_matrix, +PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, PLAYER_MESH_BODY_Y, 0);
+            Mat4.rotateX(m_matrix, m_matrix, deg2rad(-PLAYER_CROUCH_ANGLE));
+        } else {
+            Mat4.translate(m_matrix, m_matrix, +PLAYER_MESH_LEG_X + PLAYER_MESH_ARM_X / 2, PLAYER_MESH_BODY_Y, 0);
+        }
+        Mat4.rotateX(m_matrix, m_matrix, arm_x_angle.left);
         Mat4.translate(m_matrix, m_matrix, 0, -PLAYER_MESH_ARM_Y / 2, 0);
 
         Mat4.scale(m_matrix, m_matrix, PLAYER_MESH_ARM_X, PLAYER_MESH_ARM_Y, PLAYER_MESH_ARM_Z);
