@@ -33,7 +33,8 @@ export const PUBLIC_FILES = [
 
 export const ALLOWED_ORIGINS = new Set([
     "https://break-the-gems.onrender.com",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://localhost:3000"
 ]);
 
 //WebSocket

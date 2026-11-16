@@ -35,7 +35,6 @@ export function create_http_server(request, response) {
 
 export function server_on_upgrade(request, socket) {
     const origin = request.headers["origin"];
-    console.log(origin);
 
     if (
         typeof origin !== "string" ||
