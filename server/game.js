@@ -390,7 +390,7 @@ export class Game {
             if (input.mouse_inputs.right_click) {
                 if (state.place_time + PLACE_COOLDOWN <= Game.time) {
                     state.place_time = Game.time;
-                    const result = place_block(Game.chunks, Game.players.values(), player, (player.team === "red" ? 2 : 4));
+                    const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
                     if (result !== null) {
                         Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
                     }
