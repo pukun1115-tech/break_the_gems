@@ -353,7 +353,7 @@ export function draw_arm(id, animation_time) {
     gl.enable(gl.DEPTH_TEST);
 }
 
-export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time, crouch) {
+export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     Mat4.identity(m_matrix);
@@ -363,7 +363,9 @@ export function gl_draw(pos, rot, FOV, chunks, players, id, animation_time, crou
 
     const center = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
     const up = rotate_vector_XYZ({ x: 0, y: 1, z: 0 }, { x: deg2rad(rot.x), y: deg2rad(rot.y), z: deg2rad(rot.z) });
-    const eye_y = (!crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
+    const eye_y = (!players.find((p) => {
+        return p.id === id;
+    }).crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
 
     Mat4.lookAt(v_matrix, [pos.x, pos.y + eye_y, pos.z], [pos.x + center.x, pos.y + eye_y + center.y, pos.z + center.z], [up.x, up.y, up.z]);
     Mat4.perspective(p_matrix, deg2rad(FOV), gl_canvas.width / gl_canvas.height, 0.01, 1000);

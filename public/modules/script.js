@@ -252,7 +252,7 @@ function main_loop() {
         const pos = get_interpolated_players(performance.now(), snapshots, players).find((p) => p.id === id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_time, key_inputs["KeyC"]);
+        gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_time);
         ui_draw(players.get(id).hp, (attack_time + 3 > time));
         //dev
         /*
