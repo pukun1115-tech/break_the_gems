@@ -9,6 +9,8 @@ import {
     PLAYER_HIT_Z
 } from "./config.js";
 
+/** @import { ID, Player } from "./types.js" */
+/** @import { Chunk } from "./chunk.js" */
 
 /**
  * @param {Map<string, Chunk>} chunks
@@ -78,9 +80,9 @@ export function is_on_ground(chunks, px, py, pz, crouch) {
  * @param {number} px
  * @param {number} py
  * @param {number} pz
- * @param {Map<string, { pos: { x: number, y: number, z: number }, id: string }>} players
- * @param {{ pos: { x: number, y: number, z: number }, id: string, team: string }} player
- * @returns {string | null}
+ * @param {Map<ID, Player>} players
+ * @param {Player} player
+ * @returns {ID | null}
  */
 export function check_point_player_collision(px, py, pz, players, player) {
     for (const p of players.values()) {
