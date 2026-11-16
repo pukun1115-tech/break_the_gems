@@ -1,5 +1,5 @@
 /**
- * @typedef {Object} Point3D
+ * @typedef {Object} Vec3
  * @property {number} x
  * @property {number} y
  * @property {number} z
@@ -15,8 +15,8 @@
  * @property {number} hp
  * @property {"red" | "blue"} team
  * @property {boolean} crouch
- * @property {Point3D} pos
- * @property {Point3D} rot
+ * @property {Vec3} pos
+ * @property {Vec3} rot
  * @property {{ walking: boolean, hit: boolean }} animation
  */
 
