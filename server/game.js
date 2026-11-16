@@ -17,7 +17,7 @@ import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
-/** @import { ID, Player, PlayerInput, PlayerState } from "./type.js" */
+/** @import { ID, Player, PlayerInput, PlayerState } from "./types.js" */
 
 export class Game {
     static time = 0;
