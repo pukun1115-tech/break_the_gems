@@ -12,11 +12,13 @@ import {
     check_point_player_collision
 } from "./collision.js";
 
+/** @import { Vec3, ID, Player } from "./types.js" */
+
 /**
  * @param {Map<string, Chunk>} chunks
- * @param {{ pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
- * @param {Map<string, { pos: { x: number, y: number, z: number }, id: string }>} players
- * @returns {{ type: "break_block", chunk_key: string, pos: { x: number, y: number, z: number }, block: { type: number, stage: number }, block_type: number } | { type: "hit", id: string } | null}
+ * @param {Player} player
+ * @param {Map<string, Player>} players
+ * @returns {{ type: "break_block", chunk_key: string, pos: Vec3, block: { type: number, stage: number }, block_type: number } | { type: "hit", id: ID } | null}
  */
 export function find_target(chunks, player, players) {
     const rot_x = deg2rad(player.rot.x);
@@ -71,6 +73,12 @@ export function find_target(chunks, player, players) {
     return null;
 }
 
+/**
+ * @param {string} chunk_key
+ * @param {Vec3} pos
+ * @param {Map<string, Chunk>} chunks
+ * @returns {{ chunk_key: string, pos: Vec3, block: { type: number, stage: number } } | null}
+ */
 export function break_block(chunk_key, pos, chunks) {
     const target_chunk = chunks.get(chunk_key);
     if (target_chunk === undefined) {
@@ -92,10 +100,10 @@ export function break_block(chunk_key, pos, chunks) {
 
 /**
  * @param {Map<string, Chunk>} chunks
- * @param {any} players
- * @param {{pos: { x: number, y: number, z: number }, rot: { x: number, y: number, z: number }}} player
+ * @param {Map<ID, Player>} players
+ * @param {Player} player
  * @param {number} type
- * @returns {{ chunk_key: string, pos: { x: number, y: number, z: number }, block: { type: number, stage: number } } | null}
+ * @returns {{ chunk_key: string, pos: Vec3, block: { type: number, stage: number } } | null}
  */
 export function place_block(chunks, players, player, type) {
     const rot_x = deg2rad(player.rot.x);
@@ -168,7 +176,7 @@ export function place_block(chunks, players, player, type) {
 
             place_chunk.map[place_local_x][place_local_y][place_local_z] = { type: type, stage: 8 };
             let hit = false;
-            for (const p of players) {
+            for (const p of players.values()) {
                 if (check_player_chunk_collision(chunks, p.pos.x, p.pos.y, p.pos.z, p.crouch)) {
                     place_chunk.map[place_local_x][place_local_y][place_local_z].type = 0;
                     hit = true;
