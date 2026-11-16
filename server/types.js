@@ -35,4 +35,10 @@
  * @property {number} velocity_y
  */
 
+/**
+ * @typedef {Object} Block
+ * @property {number} type
+ * @property {number} stage
+ */
+
 export { };
