@@ -33,6 +33,7 @@ export const PUBLIC_FILES = [
 
 export const ALLOWED_ORIGINS = new Set([
     "https://break-the-gems.onrender.com",
+    "https://musical-pancake-6vg6x6r47r6634v7w-3000.app.github.dev/",
     "http://localhost:3000"
 ]);
 
