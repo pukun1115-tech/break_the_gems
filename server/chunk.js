@@ -34,9 +34,11 @@ export class Chunk {
         /** @type {Array<Array<Array<Block>>>} */
         this.map = Array.from({ length: CHUNK_SIZE_X }, () => {
             return Array.from({ length: CHUNK_SIZE_Y }, () => {
-                return Array.from({ length: CHUNK_SIZE_Z }, {
-                    type: 0,
-                    stage: 0
+                return Array.from({ length: CHUNK_SIZE_Z }, () => {
+                    return {
+                        type: 0,
+                        stage: 0
+                    };
                 });
             });
         });
