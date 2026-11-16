@@ -286,20 +286,19 @@ export class Game {
                 next_z += PLAYER_MOVE_SPEED * delta_time * siny;
             }
 
-            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
-                player.pos.x = next_x;
-            }
-            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
-                player.pos.z = next_z;
-            }
-
-            //crouch
             if (player.crouch && input.key_inputs["KeyC"] !== true) {
                 if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false)) {
                     player.crouch = false;
                 }
             } else {
                 player.crouch = (input.key_inputs["KeyC"] === true);
+            }
+
+            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
+                player.pos.x = next_x;
+            }
+            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
+                player.pos.z = next_z;
             }
 
             //velocity_y
