@@ -64,3 +64,119 @@ export class Chunk {
         };
     }
 }
+
+export function create_initial_chunks() {
+    const chunks = new Map();
+
+    const c00 = new Chunk(0, 0);
+    c00.fill_map(6);
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c00.set_block(1, 8, x, y, 0);
+        }
+    }
+    for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c00.set_block(1, 8, 0, y, z);
+        }
+    }
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            c00.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+            c00.set_block(1, 8, x, 0, z);
+        }
+    }
+
+    for (let x = 1; x <= 3; x++) {
+        for (let y = 16; y <= 18; y++) {
+            for (let z = 1; z <= 3; z++) {
+                    c00.set_block(0, 0, x, y, z);
+            }
+        }
+    }
+    for (let x = 2; x <= 3; x++) {
+        for (let y = 16; y <= 17; y++) {
+            for (let z = 2; z <= 3; z++) {
+                c00.set_block(3, 8, x, y, z);
+            }
+        }
+    }
+    chunks.set(get_chunk_key(0, 0), c00);
+
+    const c01 = new Chunk(0, 1);
+    c01.fill_map(6);
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c01.set_block(1, 8, x, y, CHUNK_SIZE_Z - 1);
+        }
+    }
+    for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c01.set_block(1, 8, 0, y, z);
+        }
+    }
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            c01.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+            c01.set_block(1, 8, x, 0, z);
+        }
+    }
+    chunks.set(get_chunk_key(0, 1), c01);
+
+    const c10 = new Chunk(1, 0);
+    c10.fill_map(6);
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c10.set_block(1, 8, x, y, 0);
+        }
+    }
+    for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c10.set_block(1, 8, CHUNK_SIZE_X - 1, y, z);
+        }
+    }
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            c10.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+            c10.set_block(1, 8, x, 0, z);
+        }
+    }
+    chunks.set(get_chunk_key(1, 0), c10);
+
+    const c11 = new Chunk(1, 1);
+    c11.fill_map(6);
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c11.set_block(1, 8, x, y, CHUNK_SIZE_Z - 1);
+        }
+    }
+    for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+        for (let y = 0; y < CHUNK_SIZE_Y; y++) {
+            c11.set_block(1, 8, CHUNK_SIZE_X - 1, y, z);
+        }
+    }
+    for (let x = 0; x < CHUNK_SIZE_X; x++) {
+        for (let z = 0; z < CHUNK_SIZE_Z; z++) {
+            c11.set_block(1, 8, x, CHUNK_SIZE_Y - 1, z);
+            c11.set_block(1, 8, x, 0, z);
+        }
+    }
+
+    for (let x = 12; x <= 14; x++) {
+        for (let y = 16; y <= 18; y++) {
+            for (let z = 12; z <= 14; z++) {
+                c11.set_block(0, 0, x, y, z);
+            }
+        }
+    }
+    for (let x = 12; x <= 13; x++) {
+        for (let y = 16; y <= 17; y++) {
+            for (let z = 12; z <= 13; z++) {
+                c11.set_block(5, 8, x, y, z);
+            }
+        }
+    }
+    chunks.set(get_chunk_key(1, 1), c11);
+    
+    return chunks;
+}
