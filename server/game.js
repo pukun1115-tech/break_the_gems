@@ -140,6 +140,26 @@ export class Game {
         p.hp += amount;
     }
 
+    static update_player_pos_xz() {
+        //
+    }
+
+    static update_player_pos_y() {
+        //
+    }
+
+    static update_player_animation() {
+        //
+    }
+
+    static update_player_mouse_click_left() {
+        //
+    }
+
+    static update_player_mouse_click_right() {
+        //
+    }
+
     static update() {
         const delta_time = 1 / SERVER_FPS;
         Game.time++;
