@@ -140,8 +140,36 @@ export class Game {
         p.hp += amount;
     }
 
-    static update_player_pos_xz() {
-        //
+    static update_player_pos_xz(player, input, state) {
+        const cosy = Math.cos(deg2rad(player.rot.y));
+        const siny = Math.sin(deg2rad(player.rot.y));
+
+        let next_x = player.pos.x;
+        let next_z = player.pos.z;
+
+        if (input.key_inputs["KeyW"] === true) {
+            next_x += PLAYER_MOVE_SPEED * delta_time * siny;
+            next_z += PLAYER_MOVE_SPEED * delta_time * cosy;
+        }
+        if (input.key_inputs["KeyS"] === true) {
+            next_x += -PLAYER_MOVE_SPEED * delta_time * siny;
+            next_z += -PLAYER_MOVE_SPEED * delta_time * cosy;
+        }
+        if (input.key_inputs["KeyA"] === true) {
+            next_x += PLAYER_MOVE_SPEED * delta_time * cosy;
+            next_z += -PLAYER_MOVE_SPEED * delta_time * siny;
+        }
+        if (input.key_inputs["KeyD"] === true) {
+            next_x += -PLAYER_MOVE_SPEED * delta_time * cosy;
+            next_z += PLAYER_MOVE_SPEED * delta_time * siny;
+        }
+        
+        if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
+            player.pos.x = next_x;
+        }
+        if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
+            player.pos.z = next_z;
+        }
     }
 
     static update_player_pos_y() {
@@ -172,30 +200,10 @@ export class Game {
             }
 
             //WASD
-            const cosy = Math.cos(deg2rad(player.rot.y));
-            const siny = Math.sin(deg2rad(player.rot.y));
+            Game.update_player_pos_xz(player, input, state);
 
-            let next_x = player.pos.x;
+            //velocity_y
             let next_y = player.pos.y;
-            let next_z = player.pos.z;
-
-            if (input.key_inputs["KeyW"] === true) {
-                next_x += PLAYER_MOVE_SPEED * delta_time * siny;
-                next_z += PLAYER_MOVE_SPEED * delta_time * cosy;
-            }
-            if (input.key_inputs["KeyS"] === true) {
-                next_x += -PLAYER_MOVE_SPEED * delta_time * siny;
-                next_z += -PLAYER_MOVE_SPEED * delta_time * cosy;
-            }
-            if (input.key_inputs["KeyA"] === true) {
-                next_x += PLAYER_MOVE_SPEED * delta_time * cosy;
-                next_z += -PLAYER_MOVE_SPEED * delta_time * siny;
-            }
-            if (input.key_inputs["KeyD"] === true) {
-                next_x += -PLAYER_MOVE_SPEED * delta_time * cosy;
-                next_z += PLAYER_MOVE_SPEED * delta_time * siny;
-            }
-
             if (player.crouch && input.key_inputs["KeyC"] !== true) {
                 if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false)) {
                     player.crouch = false;
@@ -203,15 +211,7 @@ export class Game {
             } else {
                 player.crouch = (input.key_inputs["KeyC"] === true);
             }
-
-            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
-                player.pos.x = next_x;
-            }
-            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
-                player.pos.z = next_z;
-            }
-
-            //velocity_y
+            
             state.velocity_y -= GRAVITY * delta_time;
 
             if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z, player.crouch)) {
