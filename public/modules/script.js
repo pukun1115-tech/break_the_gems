@@ -253,7 +253,7 @@ function main_loop() {
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
         gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_time);
-        ui_draw(players.get(id).hp, (attack_time + 3 > time));
+        ui_draw(players.get(id).hp, (attack_time + 3 > time), team_point);
         //dev
         /*
         console.clear();
