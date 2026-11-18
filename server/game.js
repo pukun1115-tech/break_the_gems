@@ -140,52 +140,152 @@ export class Game {
         p.hp += amount;
     }
 
-    static update_player_pos_xz(player, input, state) {
+    static update_player_pos_xz(player, input, delta_time) {
         const cosy = Math.cos(deg2rad(player.rot.y));
         const siny = Math.sin(deg2rad(player.rot.y));
 
-        let next_x = player.pos.x;
-        let next_z = player.pos.z;
+        const n = 10;
+        for (let i = 1; i <= n; i++) {
+            let next_x = player.pos.x;
+            let next_z = player.pos.z;
 
-        if (input.key_inputs["KeyW"] === true) {
-            next_x += PLAYER_MOVE_SPEED * delta_time * siny;
-            next_z += PLAYER_MOVE_SPEED * delta_time * cosy;
-        }
-        if (input.key_inputs["KeyS"] === true) {
-            next_x += -PLAYER_MOVE_SPEED * delta_time * siny;
-            next_z += -PLAYER_MOVE_SPEED * delta_time * cosy;
-        }
-        if (input.key_inputs["KeyA"] === true) {
-            next_x += PLAYER_MOVE_SPEED * delta_time * cosy;
-            next_z += -PLAYER_MOVE_SPEED * delta_time * siny;
-        }
-        if (input.key_inputs["KeyD"] === true) {
-            next_x += -PLAYER_MOVE_SPEED * delta_time * cosy;
-            next_z += PLAYER_MOVE_SPEED * delta_time * siny;
-        }
-        
-        if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
-            player.pos.x = next_x;
-        }
-        if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
-            player.pos.z = next_z;
+            if (input.key_inputs["KeyW"] === true) {
+                next_x += PLAYER_MOVE_SPEED * delta_time * siny / n;
+                next_z += PLAYER_MOVE_SPEED * delta_time * cosy / n;
+            }
+            if (input.key_inputs["KeyS"] === true) {
+                next_x += -PLAYER_MOVE_SPEED * delta_time * siny / n;
+                next_z += -PLAYER_MOVE_SPEED * delta_time * cosy / n;
+            }
+            if (input.key_inputs["KeyA"] === true) {
+                next_x += PLAYER_MOVE_SPEED * delta_time * cosy / n;
+                next_z += -PLAYER_MOVE_SPEED * delta_time * siny / n;
+            }
+            if (input.key_inputs["KeyD"] === true) {
+                next_x += -PLAYER_MOVE_SPEED * delta_time * cosy / n;
+                next_z += PLAYER_MOVE_SPEED * delta_time * siny / n;
+            }
+
+            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
+                player.pos.x = next_x;
+            }
+            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
+                player.pos.z = next_z;
+            }
         }
     }
 
-    static update_player_pos_y() {
-        //
+    static update_player_pos_y(player, input, state, delta_time) {
+        let next_y = player.pos.y;
+
+        if (player.crouch && input.key_inputs["KeyC"] !== true) {
+            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false)) {
+                player.crouch = false;
+            }
+        } else {
+            player.crouch = (input.key_inputs["KeyC"] === true);
+        }
+
+        state.velocity_y -= GRAVITY * delta_time;
+
+        if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z, player.crouch)) {
+            state.velocity_y = 0;
+
+            if (input.key_inputs["Space"] === true) {
+                state.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
+            }
+        }
+
+        next_y = player.pos.y + state.velocity_y * delta_time;
+
+        if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
+            if (state.velocity_y < 0) {
+                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
+                    next_y += 0.005;
+                }
+            } else {
+                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
+                    next_y -= 0.005;
+                }
+            }
+
+            state.velocity_y = 0;
+        }
+
+        player.pos.y = next_y;
     }
 
-    static update_player_animation() {
-        //
+    static update_player_animation(player, input) {
+        player.animation.walking = (
+            input.key_inputs["KeyW"] === true ||
+            input.key_inputs["KeyA"] === true ||
+            input.key_inputs["KeyS"] === true ||
+            input.key_inputs["KeyD"] === true
+        );
+
+        player.animation.hit = input.mouse_inputs.left_click;
     }
 
-    static update_player_mouse_click_left() {
-        //
+    static update_player_mouse_click_left(player, input, state) {
+        if (input.mouse_inputs.left_click) {
+            const can_break = (state.break_time + BREAK_COOLDOWN <= Game.time);
+            const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.time);
+            const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.time);
+
+            const target = find_target(Game.chunks, player, Game.players);
+            if (target !== null) {
+                if (target.type === "hit" && can_attack) {
+                    state.attack_time = Game.time;
+
+                    Game.add_player_hp(target.id, -1);
+                    send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
+                } else if (target.type === "break_block") {
+                    if (target.block_type !== 3 && target.block_type !== 5 && can_break) {
+                        const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                        if (result !== null) {
+                            state.break_time = Game.time;
+
+                            Game.broadcast(JSON.stringify({
+                                type: "update_map",
+                                chunk_key: result.chunk_key,
+                                pos: result.pos,
+                                block: result.block
+                            }));
+                        }
+                    } else if (can_break_gem && ((player.team === "red" && target.block_type === 5) || (player.team === "blue" && target.block_type === 3))) {
+                        const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                        if (result !== null) {
+                            state.break_gem_time = Game.time;
+
+                            if (player.team === "red") {
+                                Game.team_point.blue--;
+                            } else {
+                                Game.team_point.red--;
+                            }
+
+                            Game.broadcast(JSON.stringify({
+                                type: "update_map",
+                                chunk_key: result.chunk_key,
+                                pos: result.pos,
+                                block: result.block
+                            }));
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    static update_player_mouse_click_right() {
-        //
+    static update_player_mouse_click_right(player, input, state) {
+        if (input.mouse_inputs.right_click) {
+            if (state.place_time + PLACE_COOLDOWN <= Game.time) {
+                state.place_time = Game.time;
+                const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
+                if (result !== null) {
+                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
+                }
+            }
+        }
     }
 
     static update() {
@@ -200,120 +300,17 @@ export class Game {
             }
 
             //WASD
-            Game.update_player_pos_xz(player, input, state);
+            Game.update_player_pos_xz(player, input, delta_time);
 
             //velocity_y
-            let next_y = player.pos.y;
-            if (player.crouch && input.key_inputs["KeyC"] !== true) {
-                if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false)) {
-                    player.crouch = false;
-                }
-            } else {
-                player.crouch = (input.key_inputs["KeyC"] === true);
-            }
-            
-            state.velocity_y -= GRAVITY * delta_time;
-
-            if (is_on_ground(Game.chunks, player.pos.x, player.pos.y, player.pos.z, player.crouch)) {
-                state.velocity_y = 0;
-
-                if (input.key_inputs["Space"] === true) {
-                    state.velocity_y = Math.sqrt(2 * GRAVITY * PLAYER_JUMP_HEIGHT);
-                }
-            }
-
-            next_y = player.pos.y + state.velocity_y * delta_time;
-
-            if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
-                if (state.velocity_y < 0) {
-                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
-                        next_y += 0.005;
-                    }
-                } else {
-                    while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
-                        next_y -= 0.005;
-                    }
-                }
-
-                state.velocity_y = 0;
-            }
-
-            player.pos.y = next_y;
-
-            //小数第2位まで
-            player.pos.x = Math.floor(player.pos.x * 100) / 100;
-            player.pos.y = Math.floor(player.pos.y * 100) / 100;
-            player.pos.z = Math.floor(player.pos.z * 100) / 100;
+            Game.update_player_pos_y(player, input, state, delta_time);
 
             //animation
-            player.animation.walking = (
-                input.key_inputs["KeyW"] === true ||
-                input.key_inputs["KeyA"] === true ||
-                input.key_inputs["KeyS"] === true ||
-                input.key_inputs["KeyD"] === true
-            );
+            Game.update_player_animation(player, input);
 
-            player.animation.hit = input.mouse_inputs.left_click;
-
-            //break and place block
-            if (input.mouse_inputs.left_click) {
-                const can_break = (state.break_time + BREAK_COOLDOWN <= Game.time);
-                const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.time);
-                const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.time);
-
-                const target = find_target(Game.chunks, player, Game.players);
-                if (target !== null) {
-                    if (target.type === "hit" && can_attack) {
-                        state.attack_time = Game.time;
-
-                        Game.add_player_hp(target.id, -1);
-                        send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
-                    } else if (target.type === "break_block") {
-                        if (target.block_type !== 3 && target.block_type !== 5 && can_break) {
-                            const result = break_block(target.chunk_key, target.pos, Game.chunks);
-                            if (result !== null) {
-                                state.break_time = Game.time;
-
-                                Game.broadcast(JSON.stringify({
-                                    type: "update_map",
-                                    chunk_key: result.chunk_key,
-                                    pos: result.pos,
-                                    block: result.block
-                                }));
-                            }
-                        } else if (can_break_gem && ((player.team === "red" && target.block_type === 5) || (player.team === "blue" && target.block_type === 3))) {
-                            const result = break_block(target.chunk_key, target.pos, Game.chunks);
-                            if (result !== null) {
-                                state.break_gem_time = Game.time;
-
-                                if (player.team === "red") {
-                                    Game.team_point.blue--;
-                                } else {
-                                    Game.team_point.red--;
-                                }
-
-                                Game.broadcast(JSON.stringify({
-                                    type: "update_map",
-                                    chunk_key: result.chunk_key,
-                                    pos: result.pos,
-                                    block: result.block
-                                }));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (input.mouse_inputs.right_click) {
-                if (state.place_time + PLACE_COOLDOWN <= Game.time) {
-                    state.place_time = Game.time;
-                    const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
-                    if (result !== null) {
-                        Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
-                    }
-                }
-            }
-
+            //mouse input
+            Game.update_player_mouse_click_left(player, input, state);
+            Game.update_player_mouse_click_right(player, input, state);
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
     }
