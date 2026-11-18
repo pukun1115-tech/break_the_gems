@@ -1,5 +1,5 @@
 import http from "node:http";
-import { FPS, PORT } from "./config.js";
+import { SERVER_FPS, PORT } from "./config.js";
 import {
     create_http_server,
     server_on_upgrade
@@ -75,4 +75,4 @@ server.listen(PORT, "0.0.0.0", () => {
 Game.init_chunks();
 setInterval(() => {
     Game.update();
-}, 1000 / FPS);
+}, 1000 / SERVER_FPS);
