@@ -1,7 +1,7 @@
 import { Chunk, get_chunk_key, create_initial_chunks } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
 import {
-    FPS,
+    SERVER_FPS,
     GRAVITY,
     PLAYER_MOVE_SPEED,
     PLAYER_JUMP_HEIGHT,
@@ -141,7 +141,7 @@ export class Game {
     }
 
     static update() {
-        const delta_time = 1 / FPS;
+        const delta_time = 1 / SERVER_FPS;
         Game.time++;
         for (const id of Game.players.keys()) {
             const input = Game.player_inputs.get(id);
