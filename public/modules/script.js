@@ -1,4 +1,4 @@
-import { SERVER_FPS, WEBSOCKET_PROTOCOL } from "./config.js";
+import { WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
 import { player_update, get_local_player, set_local_player_rot, get_interpolated_players } from "./player.js";
 import { gl_draw, gl_canvas } from "./gl_draw.js";
@@ -15,6 +15,9 @@ let remaining_time = null;
 let attack_frame = -3;
 /** @type{Map<string, { walking: number, hit: number }>} */
 let animation_frame = new Map();
+
+let is_match_finished = false;
+let winner = null;
 
 /** @type {Map<string, Chunk>} */
 let chunks = new Map();
@@ -175,7 +178,22 @@ socket.addEventListener("message", (event) => {
         }
 
         case "finish": {
-            //
+            is_match_finished = Boolean(data.f);
+            if (is_match_finished) {
+                winner = data.r;
+            } else {
+                remaining_time = data.t;
+            }
+        }
+
+        case "set_chunks": {
+            for (const chunk_key of Object.keys(data.chunks)) {
+                const { x: pos_x, z: pos_z } = parse_chunk_key(chunk_key);
+                const c = new Chunk(pos_x, pos_z);
+                c.set_map(data.chunks[chunk_key]);
+                c.generate_mesh();
+                chunks.set(chunk_key, c);
+            }
         }
     }
 });
@@ -291,8 +309,22 @@ function main_loop() {
         const pos = get_interpolated_players(performance.now(), snapshots, players).find((p) => p.id === id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_frame);
-        ui_draw(players.get(id).hp, (attack_frame + 3 > frame), team_point, remaining_time);
+        gl_draw(pos,
+            rot,
+            FOV,
+            chunks,
+            get_interpolated_players(performance.now(), snapshots, players),
+            id,
+            animation_frame
+        );
+        ui_draw(
+            players.get(id).hp,
+            (attack_frame + 3 > frame),
+            team_point, remaining_time,
+            players.get(id).team,
+            is_match_finished,
+            winner
+        );
         //dev
         /*
         console.log();

@@ -13,7 +13,7 @@ window.addEventListener("resize", () => {
 });
 resize_ui_canvas();
 
-export function ui_draw(hp, attack, team_point, rem_tm) {
+export function ui_draw(hp, attack, team_point, rem_tm, my_team, finish, r) {
     ctx.clearRect(0, 0, ui_canvas.width, ui_canvas.height);
 
     draw_hp(hp);
@@ -24,7 +24,11 @@ export function ui_draw(hp, attack, team_point, rem_tm) {
     }
 
     draw_team_point(team_point);
-    draw_remaining_time(rem_tm)
+    draw_remaining_time(rem_tm);
+
+    if (finish) {
+        draw_win(r, my_team);
+    }
 }
 
 function draw_hp(hp) {
@@ -98,4 +102,23 @@ function draw_remaining_time(time) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(Math.floor(time / 60) + ((time % 60) < 10 ? ":0" + (time % 60) : ":" + (time % 60)), 84, 44);
+}
+
+function draw_win(r, my_team) {
+    ctx.font = "bold 120px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (r === "draw") {
+        ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+        ctx.fillText("DRAW", ui_canvas.width / 2, ui_canvas.height / 2);
+        return;
+    }
+    if (r === my_team) {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.8)";
+        ctx.fillText("WIN", ui_canvas.width / 2, ui_canvas.height / 2);
+    } else {
+        ctx.fillStyle = "rgba(63, 0, 191, 0.8)";
+        ctx.fillText("LOSE", ui_canvas.width / 2, ui_canvas.height / 2);
+    }
+
 }

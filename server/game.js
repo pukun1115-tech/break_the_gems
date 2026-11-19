@@ -8,7 +8,9 @@ import {
     BREAK_COOLDOWN,
     PLACE_COOLDOWN,
     ATTACK_COOLDOWN,
-    BREAK_GEM_COOLDOWN
+    BREAK_GEM_COOLDOWN,
+    MATCH_TIME,
+    MATCH_WAITING_TIME
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
@@ -18,7 +20,9 @@ import { find_target, break_block, place_block } from "./break_place_block.js";
 
 export class Game {
     static frame = 0;
-    static remaining_time = 1200;
+    static remaining_time = MATCH_TIME;
+    static wait_remaining_time = MATCH_WAITING_TIME;
+    static is_match_finished = false;
 
     /** @type {Map<ID, Player} */
     static players = new Map();
@@ -319,6 +323,35 @@ export class Game {
             //mouse input
             Game.update_player_mouse_click_left(player, input, state);
             Game.update_player_mouse_click_right(player, input, state);
+
+            //match finish?
+            if (Game.team_point.red === 0 && Game.team_point.blue === 0) {
+                Game.broadcast(JSON.stringify({
+                    type: "finish",
+                    f: 1,
+                    r: "draw"
+                }));
+            } else if (Game.team_point.red === 0) {
+                Game.broadcast(JSON.stringify({
+                    type: "finish",
+                    f: 1,
+                    r: "red"
+                }));
+            } else if (Game.team_point.blue === 0) {
+                Game.broadcast(JSON.stringify({
+                    type: "finish",
+                    f: 1,
+                    r: "blue"
+                }))
+            }
+
+            if (Game.remaining_time <= 0) {
+                Game.broadcast(JSON.stringify({
+                    type: "finish",
+                    f: 1,
+                    r: (Game.team_point.red === Game.team_point.blue ? "draw" : (Game.team_point.red > Game.team_point.blue ? "red" : "blue"))
+                }));
+            }
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
     }
@@ -326,14 +359,44 @@ export class Game {
     static tick() {
         Game.frame++;
         if (Game.frame % SERVER_FPS === 0) {
-            Game.remaining_time--;
-            if (Game.remaining_time < 0) {
-                Game.remaining_time = 1200;
+            if (Game.is_match_finished) {
+                Game.wait_remaining_time--;
+                if (Game.wait_remaining_time < 0) {
+                    //start new match
+                    Game.init_chunks();
+                    Game.broadcast(JSON.stringify({
+                        type: "set_chunks",
+                        chunks: Object.fromEntries(
+                            Array.from(Game.chunks, ([key, c]) => {
+                                return [key, c.map];
+                            })
+                        )
+                    }));
+                    Game.is_match_finished = false;
+                    Game.remaining_time = MATCH_TIME;
+                    Game.broadcast(JSON.stringify({
+                        type: "finish",
+                        f: false,
+                        t: Game.remaining_time
+                    }));
+                } else {
+                    Game.broadcast(JSON.stringify({
+                        type: "update_rem_tm",
+                        t: Game.wait_remaining_time
+                    }));
+                }
+            } else {
+                Game.remaining_time--;
+                if (Game.remaining_time < 0) {
+                    Game.is_match_finished = true;
+                    Game.wait_remaining_time = MATCH_WAITING_TIME;
+                } else {
+                    Game.broadcast(JSON.stringify({
+                        type: "update_rem_tm",
+                        t: Game.remaining_time
+                    }));
+                }
             }
-            Game.broadcast(JSON.stringify({
-                type: "update_rem_tm",
-                t: Game.remaining_time
-            }));
         }
     }
 
