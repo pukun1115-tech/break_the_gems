@@ -240,7 +240,7 @@ export class Game {
                     Game.add_player_hp(target.id, -1);
                     send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
                 } else if (target.type === "break_block") {
-                    if (target.block_type !== 3 && target.block_type !== 5 && can_break) {
+                    if (can_break && target.block_type !== 3 && target.block_type !== 5) {
                         const result = break_block(target.chunk_key, target.pos, Game.chunks);
                         if (result !== null) {
                             state.break_time = Game.time;
@@ -257,18 +257,25 @@ export class Game {
                         if (result !== null) {
                             state.break_gem_time = Game.time;
 
-                            if (player.team === "red") {
-                                Game.team_point.blue--;
-                            } else {
-                                Game.team_point.red--;
-                            }
-
                             Game.broadcast(JSON.stringify({
                                 type: "update_map",
                                 chunk_key: result.chunk_key,
                                 pos: result.pos,
                                 block: result.block
                             }));
+
+                            if (result.block.type === 0) {
+                                if (player.team === "red") {
+                                    Game.team_point.blue--;
+                                } else {
+                                    Game.team_point.red--;
+                                }
+
+                                Game.broadcast(JSON.stringify({
+                                    type: "update_tp",
+                                    tp: Game.team_point
+                                }));
+                            }
                         }
                     }
                 }
