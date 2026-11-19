@@ -10,10 +10,11 @@ let id = null;
 let players = new Map();
 const snapshots = [];
 let team_point = null;
-let time = 0;
-let attack_time = -3;
+let frame = 0;
+let remaining_time = null;
+let attack_frame = -3;
 /** @type{Map<string, { walking: number, hit: number }>} */
-let animation_time = new Map();
+let animation_frame = new Map();
 
 /** @type {Map<string, Chunk>} */
 let chunks = new Map();
@@ -59,8 +60,9 @@ socket.addEventListener("message", (event) => {
 
     if (data.type === "init") {
         id = data.id;
+        remaining_time = data.rem_tm;
         for (const p of data.players) {
-            animation_time.set(p.id, { walking: false, hit: false });
+            animation_frame.set(p.id, { walking: false, hit: false });
             players.set(p.id, p);
             if (p.id === id) {
                 set_local_player_rot(p);
@@ -76,11 +78,11 @@ socket.addEventListener("message", (event) => {
         }
     } else if (data.type === "player_joined") {
         console.log(`${data.id} joined the game`);
-        animation_time.set(data.id, { walking: false, hit: false });
+        animation_frame.set(data.id, { walking: false, hit: false });
     } else if (data.type === "player_left") {
         console.log(`${data.id} left the game`);
         players.delete(data.id);
-        animation_time.delete(data.id);
+        animation_frame.delete(data.id);
     } else if (data.type === "update_players") {
         players = new Map(data.players.map((p) => {
             return [p.id, p];
@@ -96,9 +98,9 @@ socket.addEventListener("message", (event) => {
         }
 
         for (const p of data.players) {
-            const animation = animation_time.get(p.id);
+            const animation = animation_frame.get(p.id);
             if (animation === undefined) {
-                animation_time.set(p.id, {
+                animation_frame.set(p.id, {
                     walking: (p.animation.walking ? performance.now() : -1),
                     hit: (p.animation.hit ? performance.now() : -1)
                 });
@@ -125,7 +127,7 @@ socket.addEventListener("message", (event) => {
         chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block;
         chunks.get(data.chunk_key).generate_mesh();
     } else if (data.type === "attack") {
-        attack_time = time;
+        attack_frame = frame;
     } else if (data.type === "full") {
         document.body.innerHTML = `
             <h1>ゲームが満員です。あとでやり直してください。</h1>
@@ -142,6 +144,8 @@ socket.addEventListener("message", (event) => {
         `;
     } else if (data.type === "update_tp") {
         team_point = data.tp;
+    } else if (data.type === "update_rem_tm") {
+        remaining_time = data.t;
     }
 });
 
@@ -242,7 +246,7 @@ function send_rot(player) {
 
 function main_loop() {
     if (id !== null) {
-        time++;
+        frame++;
         //game update
         player_update(mouse_inputs, key_inputs);
         mouse_inputs.movement_x = 0;
@@ -254,12 +258,11 @@ function main_loop() {
         const pos = get_interpolated_players(performance.now(), snapshots, players).find((p) => p.id === id).pos;
         const rot = get_local_player().rot;
         const FOV = get_local_player().FOV;
-        gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_time);
-        ui_draw(players.get(id).hp, (attack_time + 3 > time), team_point);
+        gl_draw(pos, rot, FOV, chunks, get_interpolated_players(performance.now(), snapshots, players), id, animation_frame);
+        ui_draw(players.get(id).hp, (attack_frame + 3 > frame), team_point, remaining_time);
         //dev
         /*
-        console.clear();
-        console.log(players.get(id).hp);
+        console.log();
         */
     }
 

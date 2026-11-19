@@ -8,9 +8,6 @@ import {
     BREAK_COOLDOWN,
     PLACE_COOLDOWN,
     ATTACK_COOLDOWN,
-    CHUNK_SIZE_X,
-    CHUNK_SIZE_Y,
-    CHUNK_SIZE_Z,
     BREAK_GEM_COOLDOWN
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
@@ -20,7 +17,9 @@ import { find_target, break_block, place_block } from "./break_place_block.js";
 /** @import { ID, Player, PlayerInput, PlayerState } from "./types.js" */
 
 export class Game {
-    static time = 0;
+    static frame = 0;
+    static remaining_time = 1200;
+
     /** @type {Map<ID, Player} */
     static players = new Map();
 
@@ -37,6 +36,7 @@ export class Game {
         red: 0,
         blue: 0
     };
+
     static team_point = {
         red: 8,
         blue: 8
@@ -64,10 +64,10 @@ export class Game {
         const team = (count.red === count.blue ? (Math.random() > 0.5 ? "red" : "blue") : (count.red > count.blue ? "blue" : "red"));
 
         Game.players_states.set(id, {
-            break_time: Game.time - BREAK_COOLDOWN,
-            break_gem_time: Game.time - BREAK_GEM_COOLDOWN,
-            place_time: Game.time - PLACE_COOLDOWN,
-            attack_time: Game.time - ATTACK_COOLDOWN,
+            break_time: Game.frame - BREAK_COOLDOWN,
+            break_gem_time: Game.frame - BREAK_GEM_COOLDOWN,
+            place_time: Game.frame - PLACE_COOLDOWN,
+            attack_time: Game.frame - ATTACK_COOLDOWN,
             velocity_y: 0,
         });
 
@@ -95,6 +95,7 @@ export class Game {
         send_text_frame(socket, JSON.stringify({
             type: "init",
             id: id,
+            rem_tm: Game.remaining_time,
             players: Array.from(Game.players.values()),
             team_point: Game.team_point,
             chunks: Object.fromEntries(
@@ -228,14 +229,14 @@ export class Game {
 
     static update_player_mouse_click_left(player, input, state) {
         if (input.mouse_inputs.left_click) {
-            const can_break = (state.break_time + BREAK_COOLDOWN <= Game.time);
-            const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.time);
-            const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.time);
+            const can_break = (state.break_time + BREAK_COOLDOWN <= Game.frame);
+            const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.frame);
+            const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.frame);
 
             const target = find_target(Game.chunks, player, Game.players);
             if (target !== null) {
                 if (target.type === "hit" && can_attack) {
-                    state.attack_time = Game.time;
+                    state.attack_time = Game.frame;
 
                     Game.add_player_hp(target.id, -1);
                     send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
@@ -243,7 +244,7 @@ export class Game {
                     if (can_break && target.block_type !== 3 && target.block_type !== 5) {
                         const result = break_block(target.chunk_key, target.pos, Game.chunks);
                         if (result !== null) {
-                            state.break_time = Game.time;
+                            state.break_time = Game.frame;
 
                             Game.broadcast(JSON.stringify({
                                 type: "update_map",
@@ -255,7 +256,7 @@ export class Game {
                     } else if (can_break_gem && ((player.team === "red" && target.block_type === 5) || (player.team === "blue" && target.block_type === 3))) {
                         const result = break_block(target.chunk_key, target.pos, Game.chunks);
                         if (result !== null) {
-                            state.break_gem_time = Game.time;
+                            state.break_gem_time = Game.frame;
 
                             Game.broadcast(JSON.stringify({
                                 type: "update_map",
@@ -285,8 +286,8 @@ export class Game {
 
     static update_player_mouse_click_right(player, input, state) {
         if (input.mouse_inputs.right_click) {
-            if (state.place_time + PLACE_COOLDOWN <= Game.time) {
-                state.place_time = Game.time;
+            if (state.place_time + PLACE_COOLDOWN <= Game.frame) {
+                state.place_time = Game.frame;
                 const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
                 if (result !== null) {
                     Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
@@ -297,7 +298,7 @@ export class Game {
 
     static update() {
         const delta_time = 1 / SERVER_FPS;
-        Game.time++;
+        Game.tick();
         for (const id of Game.players.keys()) {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
@@ -320,6 +321,20 @@ export class Game {
             Game.update_player_mouse_click_right(player, input, state);
         }
         Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
+    }
+
+    static tick() {
+        Game.frame++;
+        if (Game.frame % SERVER_FPS === 0) {
+            Game.remaining_time--;
+            if (Game.remaining_time < 0) {
+                Game.remaining_time = 1200;
+            }
+            Game.broadcast(JSON.stringify({
+                type: "update_rem_tm",
+                t: Game.remaining_time
+            }));
+        }
     }
 
     static handle_received_text(socket, text) {

@@ -13,7 +13,7 @@ window.addEventListener("resize", () => {
 });
 resize_ui_canvas();
 
-export function ui_draw(hp, attack, team_point) {
+export function ui_draw(hp, attack, team_point, rem_tm) {
     ctx.clearRect(0, 0, ui_canvas.width, ui_canvas.height);
 
     draw_hp(hp);
@@ -24,6 +24,7 @@ export function ui_draw(hp, attack, team_point) {
     }
 
     draw_team_point(team_point);
+    draw_remaining_time(rem_tm)
 }
 
 function draw_hp(hp) {
@@ -34,7 +35,7 @@ function draw_hp(hp) {
     ctx.fillRect(24, ui_canvas.height - 60, 60, 36);
 
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
-    ctx.font = "24px sans-serif";
+    ctx.font = "bold 24px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(hp, 54, ui_canvas.height - 42);
@@ -86,4 +87,15 @@ function draw_team_point(teamPoint) {
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
     ctx.fillText(teamPoint.red, centerX - 32, 24);
     ctx.fillText(teamPoint.blue, centerX + 32, 24);
+}
+
+function draw_remaining_time(time) {
+    ctx.fillStyle = "rgba(191, 191, 191, 0.75)";
+    ctx.fillRect(24, 24, 120, 40);
+
+    ctx.fillStyle = "rgba(0, 0, 0, 1)";
+    ctx.font = "bold 24px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(Math.floor(time / 60) + ((time % 60) < 10 ? ":0" + (time % 60) : ":" + (time % 60)), 84, 44);
 }
