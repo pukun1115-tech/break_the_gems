@@ -27,15 +27,18 @@ export function ui_draw(hp, attack, team_point) {
 }
 
 function draw_hp(hp) {
+    ctx.fillStyle = "rgba(191, 191, 191, 1)";
+    ctx.fillRect(24, ui_canvas.height - 48, 48, 24);
+
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
     ctx.font = "24px sans-serif";
     ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.fillText(`HP: ${hp}`, 0, 0);
+    ctx.textBaseline = "bottom";
+    ctx.fillText(hp, 24, ui_canvas.height - 24);
 
     const width = 240 * (hp / 100);
     ctx.fillStyle = "rgba(255, 0, 0, 0.75)";
-    ctx.fillRect(12, ui_canvas.height - 48, width, 36);
+    ctx.fillRect(96, ui_canvas.height - 48, width, 24);
 }
 
 function draw_crosshair() {
