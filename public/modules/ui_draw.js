@@ -34,7 +34,7 @@ function draw_hp(hp) {
     //縦36
     ctx.fillRect(24, ui_canvas.height - 60, 60, 36);
 
-    ctx.fillStyle = "rgba(255, 255, 255, 1)";
+    ctx.fillStyle = "rgba(0, 0, 0, 1)";
     ctx.font = "bold 24px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

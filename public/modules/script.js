@@ -1,4 +1,4 @@
-import { WEBSOCKET_PROTOCOL } from "./config.js";
+import { SERVER_FPS, WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
 import { player_update, get_local_player, set_local_player_rot, get_interpolated_players } from "./player.js";
 import { gl_draw, gl_canvas } from "./gl_draw.js";
@@ -58,94 +58,125 @@ socket.addEventListener("message", (event) => {
         return;
     }
 
-    if (data.type === "init") {
-        id = data.id;
-        remaining_time = data.rem_tm;
-        for (const p of data.players) {
-            animation_frame.set(p.id, { walking: false, hit: false });
-            players.set(p.id, p);
-            if (p.id === id) {
-                set_local_player_rot(p);
-            }
-        }
-        team_point = data.team_point;
-        for (const chunk_key of Object.keys(data.chunks)) {
-            const { x: pos_x, z: pos_z } = parse_chunk_key(chunk_key);
-            const c = new Chunk(pos_x, pos_z);
-            c.set_map(data.chunks[chunk_key]);
-            c.generate_mesh();
-            chunks.set(chunk_key, c);
-        }
-    } else if (data.type === "player_joined") {
-        console.log(`${data.id} joined the game`);
-        animation_frame.set(data.id, { walking: false, hit: false });
-    } else if (data.type === "player_left") {
-        console.log(`${data.id} left the game`);
-        players.delete(data.id);
-        animation_frame.delete(data.id);
-    } else if (data.type === "update_players") {
-        players = new Map(data.players.map((p) => {
-            return [p.id, p];
-        }));
-
-        snapshots.push({
-            received_at: performance.now(),
-            players: data.players
-        });
-
-        while (snapshots.length > 6) {
-            snapshots.shift();
-        }
-
-        for (const p of data.players) {
-            const animation = animation_frame.get(p.id);
-            if (animation === undefined) {
-                animation_frame.set(p.id, {
-                    walking: (p.animation.walking ? performance.now() : -1),
-                    hit: (p.animation.hit ? performance.now() : -1)
-                });
-                continue;
-            }
-
-            if (p.animation.walking) {
-                if (animation.walking === -1) {
-                    animation.walking = performance.now();
+    switch (data.type) {
+        case "init": {
+            id = data.id;
+            remaining_time = data.rem_tm;
+            for (const p of data.players) {
+                animation_frame.set(p.id, { walking: -1, hit: -1 });
+                players.set(p.id, p);
+                if (p.id === id) {
+                    set_local_player_rot(p);
                 }
-            } else {
-                animation.walking = -1;
+            }
+            team_point = data.team_point;
+            for (const chunk_key of Object.keys(data.chunks)) {
+                const { x: pos_x, z: pos_z } = parse_chunk_key(chunk_key);
+                const c = new Chunk(pos_x, pos_z);
+                c.set_map(data.chunks[chunk_key]);
+                c.generate_mesh();
+                chunks.set(chunk_key, c);
+            }
+            break;
+        }
+
+        case "player_joined": {
+            console.log(`${data.id} joined the game`);
+            animation_frame.set(data.id, { walking: -1, hit: -1 });
+            break;
+        }
+
+        case "player_left": {
+            console.log(`${data.id} left the game`);
+            players.delete(data.id);
+            animation_frame.delete(data.id);
+            break;
+        }
+
+        case "update_players": {
+            players = new Map(data.players.map((p) => {
+                return [p.id, p];
+            }));
+
+            snapshots.push({
+                received_at: performance.now(),
+                players: data.players
+            });
+
+            while (snapshots.length > 6) {
+                snapshots.shift();
             }
 
-            if (p.animation.hit) {
-                if (animation.hit === -1) {
-                    animation.hit = performance.now();
+            for (const p of data.players) {
+                const animation = animation_frame.get(p.id);
+                if (animation === undefined) {
+                    animation_frame.set(p.id, {
+                        walking: (p.animation.walking ? performance.now() : -1),
+                        hit: (p.animation.hit ? performance.now() : -1)
+                    });
+                    continue;
                 }
-            } else {
-                animation.hit = -1;
+
+                if (p.animation.walking) {
+                    if (animation.walking === -1) {
+                        animation.walking = performance.now();
+                    }
+                } else {
+                    animation.walking = -1;
+                }
+
+                if (p.animation.hit) {
+                    if (animation.hit === -1) {
+                        animation.hit = performance.now();
+                    }
+                } else {
+                    animation.hit = -1;
+                }
             }
+            break;
         }
-    } else if (data.type === "update_map") {
-        chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block;
-        chunks.get(data.chunk_key).generate_mesh();
-    } else if (data.type === "attack") {
-        attack_frame = frame;
-    } else if (data.type === "full") {
-        document.body.innerHTML = `
-            <h1>ゲームが満員です。あとでやり直してください。</h1>
-            <h2>pukun1115-techの他のゲーム</h2>
-            <ul>
-                <li><a href="https://paint-ball.onrender.com">paint-ball</a></li>
-                <li><a href="https://pukun1115-tech.github.io/tower-defense/">tower-defense</a></li>
-            </ul>
-            <h2>bloxd.ioをやろう!</h2>
-            <ul>
-                <li><a href="https://bloxd.io">bloxd.io</a></li>
-            </ul>
-            <p><a href="https://github.com/pukun1115-tech">pukun1115-tech</a></p>
-        `;
-    } else if (data.type === "update_tp") {
-        team_point = data.tp;
-    } else if (data.type === "update_rem_tm") {
-        remaining_time = data.t;
+
+        case "update_map": {
+            chunks.get(data.chunk_key).map[data.pos.x][data.pos.y][data.pos.z] = data.block;
+            chunks.get(data.chunk_key).generate_mesh();
+            break;
+        }
+
+        case "attack": {
+            attack_frame = frame;
+            break;
+        }
+
+        case "full": {
+            document.body.innerHTML = `
+                <h1>ゲームが満員です。あとでやり直してください。</h1>
+                <h2>pukun1115-techの他のゲーム</h2>
+                <ul>
+                    <li><a href="https://paint-ball.onrender.com">paint-ball</a></li>
+                    <li><a href="https://pukun1115-tech.github.io/tower-defense/">tower-defense</a></li>
+                </ul>
+                <h2>bloxd.ioをやろう!</h2>
+                <ul>
+                    <li><a href="https://bloxd.io">bloxd.io</a></li>
+                </ul>
+                <p><a href="https://github.com/pukun1115-tech">pukun1115-tech</a></p>
+            `;
+            break;
+        }
+
+        case "update_tp": {
+            team_point = data.tp;
+            break;
+        }
+
+        case "update_rem_tm": {
+            remaining_time = data.t;
+            break;
+        }
+
+        case "finish": {
+            //
+        }
     }
 });
 
@@ -221,16 +252,18 @@ gl_canvas.addEventListener("mousemove", (event) => {
 });
 
 function send_input() {
-    socket.send(JSON.stringify({
-        type: "input",
-        input: {
-            key_inputs: key_inputs,
-            mouse_inputs: {
-                left_click: mouse_inputs.left_click,
-                right_click: mouse_inputs.right_click
+    if (frame % 2 === 0) {
+        socket.send(JSON.stringify({
+            type: "input",
+            input: {
+                key_inputs: key_inputs,
+                mouse_inputs: {
+                    left_click: mouse_inputs.left_click,
+                    right_click: mouse_inputs.right_click
+                }
             }
-        }
-    }));
+        }));
+    }
 }
 
 function send_rot(player) {
