@@ -140,6 +140,8 @@ socket.addEventListener("message", (event) => {
             </ul>
             <p><a href="https://github.com/pukun1115-tech">pukun1115-tech</a></p>
         `;
+    } else if (data.type === "update_tp") {
+        team_point = data.tp;
     }
 });
 
