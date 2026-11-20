@@ -5,9 +5,9 @@ import {
     PONG_OPCODE,
     MAX_BUFFER_SIZE
 } from "../config.js";
-import { Game } from "../game.js";
 
 /** @import { WebSocket } from "../types.js" */
+/** @import { Game } from "../game.js" */
 
 
 /**
@@ -230,6 +230,7 @@ export function extract_frame(buffer) {
     } else {
         length_bytes = 8;
     }
+
     const header_length = 2 + length_bytes + 4;
     if (buffer.length < header_length) {
         return { frame: null, rest: buffer };
@@ -242,16 +243,17 @@ export function extract_frame(buffer) {
 
     return {
         frame: buffer.subarray(0, frame_length),
-        rest: buffer.subarray(frame_length),
+        rest: buffer.subarray(frame_length)
     };
 }
 
 /**
- * @param {WebSocket} socket 
- * @param {Buffer} buffer 
- * @param {Game} Game 
+ * @param {WebSocket} socket
+ * @param {Buffer} buffer
+ * @param {Game} game
+ * @returns {Buffer | null}
  */
-export function handle_received_buffer(socket, buffer, Game) {
+export function handle_received_buffer(socket, buffer, game) {
     if (buffer.length > MAX_BUFFER_SIZE) {
         socket.destroy();
         return null;
@@ -273,7 +275,7 @@ export function handle_received_buffer(socket, buffer, Game) {
         const first_byte = frame[0];
         const opcode = first_byte & 0b00001111;
         if (opcode === CLOSE_OPCODE) {
-            send_close_frame(socket, 1000, "normal termination");
+            send_close_frame(socket, 1000, "正常終了");
             socket.end();
             return null;
         } else if (opcode === PING_OPCODE) {
@@ -282,18 +284,17 @@ export function handle_received_buffer(socket, buffer, Game) {
                 socket.destroy();
                 return null;
             }
-
             send_pong_frame(socket, payload);
         } else if (opcode === PONG_OPCODE) {
-            //do nothing
+            //do anything
         } else if (opcode === TEXT_OPCODE) {
             const text = decode_text_frame(frame);
             if (text === null) {
                 socket.destroy();
                 return null;
             }
-            //do anything
-            Game.handle_received_text(socket, text);
+
+            game.handle_received_text(socket, text);
         }
     }
 
