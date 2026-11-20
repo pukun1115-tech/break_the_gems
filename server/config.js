@@ -50,8 +50,8 @@ export const MAX_BUFFER_SIZE = 512 * 512;
 //Game
 export const MAX_PLAYERS = 6;
 export const SERVER_FPS = 20;
-export const MATCH_TIME = 10;
-export const MATCH_WAITING_TIME = 5;
+export const MATCH_TIME = 240;
+export const MATCH_WAITING_TIME = 15;
 
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
@@ -59,16 +59,16 @@ export const CHUNK_SIZE_Z = 16;
 
 export const PLAYER_HIT_X = 0.4;
 export const PLAYER_HIT_Y = 1.6;
-export const PLAYER_HIT_Y_CROUCH = 1.2;
+export const PLAYER_HIT_Y_CROUCH = 1.4;
 export const PLAYER_HIT_Z = 0.4;
 export const PLAYER_EYE_Y = 1.4;
-export const PLAYER_EYE_Y_CROUCH = 1.0;
+export const PLAYER_EYE_Y_CROUCH = 1.2;
 
 export const GRAVITY = 20;
 export const PLAYER_MOVE_SPEED = 4;
 export const PLAYER_JUMP_HEIGHT = 1.1;
 
-export const BREAK_COOLDOWN = (0 / 8) * SERVER_FPS;
-export const BREAK_GEM_COOLDOWN = (1 / 8) * SERVER_FPS;
+export const BREAK_COOLDOWN = (0.5 / 8) * SERVER_FPS;
+export const BREAK_GEM_COOLDOWN = (4 / 8) * SERVER_FPS;
 export const PLACE_COOLDOWN = 0.25 * SERVER_FPS;
 export const ATTACK_COOLDOWN = 0.2 * SERVER_FPS;
