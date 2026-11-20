@@ -24,7 +24,7 @@ export function create_http_server(request, response) {
     fs.readFile(file_path, (error, data) => {
         if (error !== null) {
             response.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
-            response.end(`Could Not Read File. file_path: ${file_path}`);
+            response.end("server error");
             console.log(`Could Not Read File. file_path: ${file_path}`);
             return;
         }
