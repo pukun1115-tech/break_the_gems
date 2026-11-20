@@ -1,4 +1,8 @@
 /**
+ * @typedef {import("node:net").Socket} WebSocket
+ */
+
+/**
  * @typedef {Object} Vec3
  * @property {number} x
  * @property {number} y

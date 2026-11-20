@@ -5,8 +5,16 @@ import {
     PONG_OPCODE,
     MAX_BUFFER_SIZE
 } from "../config.js";
+import { Game } from "../game.js";
+
+/** @import { WebSocket } from "../types.js" */
 
 
+/**
+ * @param {WebSocket} socket
+ * @param {string} text
+ * @returns {boolean}
+ */
 export function send_text_frame(socket, text) {
     const payload = Buffer.from(text, "utf8");
     const FIN = 0b10000000;
@@ -37,6 +45,12 @@ export function send_text_frame(socket, text) {
     return false;
 }
 
+/**
+ * @param {WebSocket} socket
+ * @param {number} status_code
+ * @param {string} reason
+ * @returns {boolean}
+ */
 export function send_close_frame(socket, status_code = 1000, reason = "") {
     const reason_buffer = Buffer.from(reason, "utf8");
     if (reason_buffer.length > 123) {
@@ -58,6 +72,11 @@ export function send_close_frame(socket, status_code = 1000, reason = "") {
     return false;
 }
 
+/**
+ * @param {WebSocket} socket
+ * @param {Buffer} payload
+ * @returns {boolean}
+ */
 export function send_ping_frame(socket, payload = Buffer.alloc(0)) {
     if (payload.length > 125) {
         console.log("the ping payload must not be more than 125bytes");
@@ -75,6 +94,11 @@ export function send_ping_frame(socket, payload = Buffer.alloc(0)) {
     return false;
 }
 
+/**
+ * @param {WebSocket} socket
+ * @param {Buffer} payload
+ * @returns {boolean}
+ */
 export function send_pong_frame(socket, payload = Buffer.alloc(0)) {
     if (payload.length > 125) {
         console.log("the pong payload must not be more than 125bytes");
@@ -92,6 +116,10 @@ export function send_pong_frame(socket, payload = Buffer.alloc(0)) {
     return false;
 }
 
+/**
+ * @param {Buffer} frame
+ * @returns {Buffer | null}
+ */
 export function decode_frame_payload(frame) {
     if (frame.length < 2) {
         return null;
@@ -149,14 +177,22 @@ export function decode_frame_payload(frame) {
     return decoded_payload;
 }
 
+/**
+ * @param {Buffer} frame
+ * @returns {string | null}
+ */
 export function decode_text_frame(frame) {
     const payload = decode_frame_payload(frame);
     return (payload === null ? null : payload.toString("utf8"));
 }
 
+/**
+ * @param {Buffer} buffer
+ * @returns {{ frame: Buffer | null, rest: Buffer } | null}
+ */
 export function extract_frame(buffer) {
     if (buffer.length < 2) {
-        return { "frame": null, "rest": buffer };
+        return { frame: null, rest: buffer };
     }
     const first_byte = buffer[0];
     const second_byte = buffer[1];
@@ -196,20 +232,25 @@ export function extract_frame(buffer) {
     }
     const header_length = 2 + length_bytes + 4;
     if (buffer.length < header_length) {
-        return { "frame": null, "rest": buffer };
+        return { frame: null, rest: buffer };
     }
     const payload_length = (length_code <= 125 ? length_code : buffer.readUInt16BE(2));
     const frame_length = header_length + payload_length;
     if (buffer.length < frame_length) {
-        return { "frame": null, "rest": buffer };
+        return { frame: null, rest: buffer };
     }
 
     return {
-        "frame": buffer.subarray(0, frame_length),
-        "rest": buffer.subarray(frame_length),
+        frame: buffer.subarray(0, frame_length),
+        rest: buffer.subarray(frame_length),
     };
 }
 
+/**
+ * @param {WebSocket} socket 
+ * @param {Buffer} buffer 
+ * @param {Game} Game 
+ */
 export function handle_received_buffer(socket, buffer, Game) {
     if (buffer.length > MAX_BUFFER_SIZE) {
         socket.destroy();

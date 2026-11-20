@@ -1,4 +1,4 @@
-import { Chunk, get_chunk_key, create_initial_chunks } from "./chunk.js";
+import { Chunk, create_initial_chunks } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
 import {
     SERVER_FPS,
@@ -16,12 +16,12 @@ import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
-/** @import { ID, Player, PlayerInput, PlayerState } from "./types.js" */
+/** @import { WebSocket, ID, Player, PlayerInput, PlayerState } from "./types.js" */
 
 export class Game {
     static frame = 0;
     static remaining_time = MATCH_TIME;
-    static wait_remaining_time = MATCH_WAITING_TIME;
+    static wait_remaining_time = 0;
     static is_match_finished = false;
 
     /** @type {Map<ID, Player} */
@@ -33,7 +33,9 @@ export class Game {
     /** @type {Map<ID, PlayerState>} */
     static players_states = new Map();
 
+    /** @type {Map<ID, WebSocket>} */
     static sockets_by_id = new Map();
+    /** @type {Map<WebSocket, ID>} */
     static ids_by_socket = new Map();
 
     static player_count = {
@@ -62,6 +64,9 @@ export class Game {
         return t.charAt(0).toUpperCase() + t.slice(1);
     }
 
+    /**
+     * @param {ID} id
+     */
     static set_initial_player_state(id) {
         Game.players_states.set(id, {
             break_time: Game.frame - BREAK_COOLDOWN,
@@ -72,6 +77,10 @@ export class Game {
         });
     }
 
+    /**
+     * @param {ID} id
+     * @param {"red" | "blue"} team
+     */
     static set_initial_player(id, team) {
         Game.players.set(id, {
             id: id,
@@ -84,6 +93,9 @@ export class Game {
         });
     }
 
+    /**
+     * @param {ID} id
+     */
     static set_initial_player_input(id) {
         Game.player_inputs.set(id, {
             key_inputs: {},
@@ -119,9 +131,17 @@ export class Game {
             )
         }));
 
+        send_text_frame(socket, JSON.stringify({
+            type: "set_rot",
+            r: Game.players.get(id).rot
+        }));
+
         Game.broadcast(JSON.stringify({ type: "player_joined", id: id }));
     }
 
+    /**
+     * @param {WebSocket} socket
+     */
     static remove_player(socket) {
         const id = Game.ids_by_socket.get(socket);
         if (id === undefined) {
@@ -230,6 +250,10 @@ export class Game {
         player.pos.y = next_y;
     }
 
+    /**
+     * @param {Player} player
+     * @param {Record<string, boolean>} input
+     */
     static update_player_animation(player, input) {
         player.animation.walking = (
             input.key_inputs["KeyW"] === true ||
@@ -241,71 +265,97 @@ export class Game {
         player.animation.hit = input.mouse_inputs.left_click;
     }
 
-    static update_player_mouse_click_left(player, input, state) {
-        if (input.mouse_inputs.left_click) {
-            const can_break = (state.break_time + BREAK_COOLDOWN <= Game.frame);
-            const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.frame);
-            const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.frame);
+    /**
+     * @param {Player} player 
+     * @param {PlayerState} state 
+     */
+    static update_player_mouse_click_left(player, state) {
+        const socket = Game.sockets_by_id.get(player.id);
 
-            const target = find_target(Game.chunks, player, Game.players);
-            if (target !== null) {
-                if (target.type === "hit" && can_attack) {
-                    state.attack_time = Game.frame;
+        const can_break = (state.break_time + BREAK_COOLDOWN <= Game.frame);
+        const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.frame);
+        const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.frame);
 
-                    Game.add_player_hp(target.id, -1);
-                    send_text_frame(Game.sockets_by_id.get(player.id), JSON.stringify({ type: "attack" }));
-                } else if (target.type === "break_block") {
-                    if (can_break && target.block_type !== 3 && target.block_type !== 5) {
-                        const result = break_block(target.chunk_key, target.pos, Game.chunks);
-                        if (result !== null) {
-                            state.break_time = Game.frame;
+        const target = find_target(Game.chunks, player, Game.players);
+        if (target === null) {
+            return;
+        }
 
-                            Game.broadcast(JSON.stringify({
-                                type: "update_map",
-                                chunk_key: result.chunk_key,
-                                pos: result.pos,
-                                block: result.block
-                            }));
+        if (can_attack && target.type === "hit") {
+            state.attack_time = Game.frame;
+
+            Game.add_player_hp(target.id, -20);
+            if (
+                !send_text_frame(socket, JSON.stringify({ type: "attack" }))
+            ) {
+                Game.remove_player(socket);
+            }
+        } else if (target.type === "break_block") {
+            if (
+                can_break &&
+                (target.block_type !== 3 && target.block_type !== 5)
+            ) {
+                const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                if (result !== null) {
+                    state.break_time = Game.frame;
+
+                    Game.broadcast(JSON.stringify({
+                        type: "update_map",
+                        chunk_key: result.chunk_key,
+                        pos: result.pos,
+                        block: result.block
+                    }));
+                }
+            } else if (
+                can_break_gem &&
+                (
+                    (player.team === "red" && target.block_type === 5) ||
+                    (player.team === "blue" && target.block_type === 3)
+                )
+            ) {
+                const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                if (result !== null) {
+                    state.break_gem_time = Game.frame;
+
+                    Game.broadcast(JSON.stringify({
+                        type: "update_map",
+                        chunk_key: result.chunk_key,
+                        pos: result.pos,
+                        block: result.block
+                    }));
+
+                    if (result.block.type === 0) {
+                        if (player.team === "red") {
+                            Game.team_point.blue--;
+                        } else {
+                            Game.team_point.red--;
                         }
-                    } else if (can_break_gem && ((player.team === "red" && target.block_type === 5) || (player.team === "blue" && target.block_type === 3))) {
-                        const result = break_block(target.chunk_key, target.pos, Game.chunks);
-                        if (result !== null) {
-                            state.break_gem_time = Game.frame;
 
-                            Game.broadcast(JSON.stringify({
-                                type: "update_map",
-                                chunk_key: result.chunk_key,
-                                pos: result.pos,
-                                block: result.block
-                            }));
-
-                            if (result.block.type === 0) {
-                                if (player.team === "red") {
-                                    Game.team_point.blue--;
-                                } else {
-                                    Game.team_point.red--;
-                                }
-
-                                Game.broadcast(JSON.stringify({
-                                    type: "update_tp",
-                                    tp: Game.team_point
-                                }));
-                            }
-                        }
+                        Game.broadcast(JSON.stringify({
+                            type: "update_tp",
+                            tp: Game.team_point
+                        }));
                     }
                 }
             }
         }
     }
 
-    static update_player_mouse_click_right(player, input, state) {
-        if (input.mouse_inputs.right_click) {
-            if (state.place_time + PLACE_COOLDOWN <= Game.frame) {
-                state.place_time = Game.frame;
-                const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
-                if (result !== null) {
-                    Game.broadcast(JSON.stringify({ type: "update_map", chunk_key: result.chunk_key, pos: result.pos, block: result.block }));
-                }
+    /**
+     * @param {Player} player
+     * @param {PlayerState} state
+     */
+    static update_player_mouse_click_right(player, state) {
+        if (state.place_time + PLACE_COOLDOWN <= Game.frame) {
+            state.place_time = Game.frame;
+            const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
+            if (result !== null) {
+                Game.broadcast(JSON.stringify({
+                    type: "update_map",
+                    chunk_key: result.chunk_key,
+                    pos: result.pos,
+                    block: result.block
+                }));
             }
         }
     }
@@ -313,7 +363,7 @@ export class Game {
     static update() {
         const delta_time = 1 / SERVER_FPS;
         Game.tick();
-        for (const id of Game.players.keys()) {
+        for (const id of Game.ids_by_socket.values()) {
             const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
             const state = Game.players_states.get(id);
@@ -331,10 +381,16 @@ export class Game {
             Game.update_player_animation(player, input);
 
             //mouse input
-            Game.update_player_mouse_click_left(player, input, state);
-            Game.update_player_mouse_click_right(player, input, state);
+            if (input.mouse_inputs.left_click) {
+                Game.update_player_mouse_click_left(player, state);
+            }
+            if (input.mouse_inputs.right_click) {
+                Game.update_player_mouse_click_right(player, state);
+            }
+        }
 
-            //match finish?
+        //match finish?
+        if (!Game.is_match_finished) {
             if (Game.team_point.red === 0 || Game.team_point.blue === 0) {
                 Game.is_match_finished = true;
                 Game.wait_remaining_time = MATCH_WAITING_TIME;
@@ -342,32 +398,106 @@ export class Game {
                 if (Game.team_point.red === 0 && Game.team_point.blue === 0) {
                     Game.broadcast(JSON.stringify({
                         type: "finish",
-                        f: 1,
                         r: "draw"
                     }));
                 } else if (Game.team_point.red === 0) {
                     Game.broadcast(JSON.stringify({
                         type: "finish",
-                        f: 1,
                         r: "blue"
                     }));
                 } else if (Game.team_point.blue === 0) {
                     Game.broadcast(JSON.stringify({
                         type: "finish",
-                        f: 1,
                         r: "red"
                     }));
                 }
-            }
-
-            if (Game.remaining_time <= 0) {
+            } else if (Game.remaining_time <= 0) {
+                Game.is_match_finished = true;
+                Game.wait_remaining_time = MATCH_WAITING_TIME;
                 Game.broadcast(JSON.stringify({
                     type: "finish",
-                    f: 1,
                     r: (Game.team_point.red === Game.team_point.blue ? "draw" : (Game.team_point.red > Game.team_point.blue ? "red" : "blue"))
+                }));
+            } else {
+                Game.broadcast(JSON.stringify({
+                    type: "update_rem_tm",
+                    t: Game.remaining_time
+                }));
+            }
+        } else {
+            if (Game.wait_remaining_time <= 0) {
+                //start new match
+
+                //reset game data
+                Game.player_count = {
+                    red: 0,
+                    blue: 0
+                };
+
+                Game.team_point = {
+                    red: 8,
+                    blue: 8
+                };
+                Game.broadcast(JSON.stringify({
+                    type: "update_tp",
+                    tp: Game.team_point
+                }));
+
+                //reset players
+                Game.players.clear();
+                Game.players_states.clear();
+                Game.player_inputs.clear();
+                for (const id of Game.ids_by_socket.values()) {
+                    const socket = Game.sockets_by_id.get(id);
+
+                    const c = Game.player_count;
+                    const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
+                    Game.player_count[team]++;
+
+                    Game.set_initial_player(id, team);
+                    Game.set_initial_player_input(id);
+                    Game.set_initial_player_state(id);
+
+                    const result = send_text_frame(socket, JSON.stringify({
+                        type: "set_rot",
+                        r: Game.players.get(id).rot
+                    }));
+
+                    if (!result) {
+                        Game.remove_player(socket);
+                    }
+                }
+                Game.broadcast(JSON.stringify({
+                    type: "update_players",
+                    players: Array.from(Game.players.values())
+                }));
+
+                //reset chunks
+                Game.init_chunks();
+                Game.broadcast(JSON.stringify({
+                    type: "set_chunks",
+                    chunks: Object.fromEntries(
+                        Array.from(Game.chunks, ([key, c]) => {
+                            return [key, c.map];
+                        })
+                    )
+                }));
+
+                //start match
+                Game.is_match_finished = false;
+                Game.remaining_time = MATCH_TIME;
+                Game.broadcast(JSON.stringify({
+                    type: "start",
+                    t: Game.remaining_time
+                }));
+            } else {
+                Game.broadcast(JSON.stringify({
+                    type: "update_rem_tm",
+                    t: Game.wait_remaining_time
                 }));
             }
         }
+
         Game.broadcast(JSON.stringify({
             type: "update_players",
             players: Array.from(Game.players.values())
@@ -378,69 +508,12 @@ export class Game {
         Game.frame++;
         if (Game.frame % SERVER_FPS === 0) {
             if (Game.is_match_finished) {
-                Game.wait_remaining_time--;
-                if (Game.wait_remaining_time < 0) {
-                    //start new match
-                    Game.player_count = {
-                        red: 0,
-                        blue: 0
-                    };
-                    Game.team_point = {
-                        red: 0,
-                        blue: 0
-                    };
-                    Game.broadcast(JSON.stringify({
-                        type: "update_tp",
-                        tp: Game.team_point
-                    }));
-                    Game.players.clear();
-                    Game.players_states.clear();
-                    Game.player_inputs.clear();
-                    for (const id of Game.sockets_by_id.keys()) {
-                        const c = Game.player_count;
-                        const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
-                        Game.player_count[team]++;
-
-                        Game.set_initial_player(id, team);
-                        Game.set_initial_player_input(id);
-                        Game.set_initial_player_state(id);
-                    }
-                    Game.init_chunks();
-                    Game.broadcast(JSON.stringify({
-                        type: "set_chunks",
-                        chunks: Object.fromEntries(
-                            Array.from(Game.chunks, ([key, c]) => {
-                                return [key, c.map];
-                            })
-                        )
-                    }));
-                    Game.is_match_finished = false;
-                    Game.remaining_time = MATCH_TIME;
-                    Game.broadcast(JSON.stringify({
-                        type: "finish",
-                        f: 0,
-                        t: Game.remaining_time
-                    }));
-                    Game.broadcast(JSON.stringify({
-                        type: "update_players",
-                        players: Array.from(Game.players.values())
-                    }));
-                } else {
-                    Game.broadcast(JSON.stringify({
-                        type: "update_rem_tm",
-                        t: Game.wait_remaining_time
-                    }));
+                if (Game.wait_remaining_time > 0) {
+                    Game.wait_remaining_time--;
                 }
             } else {
-                Game.remaining_time--;
-                if (Game.remaining_time < 0) {
-                    Game.is_match_finished = true;
-                    Game.wait_remaining_time = MATCH_WAITING_TIME;
-                } else {
-                    Game.broadcast(JSON.stringify({
-                        type: "update_rem_tm",
-                        t: Game.remaining_time
-                    }));
+                if (Game.remaining_time > 0) {
+                    Game.remaining_time--;
                 }
             }
         }
@@ -520,7 +593,11 @@ export class Game {
 
     static broadcast(text) {
         for (const s of Game.sockets_by_id.values()) {
-            send_text_frame(s, text);
+            if (
+                !send_text_frame(s, text)
+            ) {
+                Game.remove_player(s);
+            }
         }
     }
 }

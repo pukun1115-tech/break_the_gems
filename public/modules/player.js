@@ -12,14 +12,13 @@ export function get_local_player() {
     return structuredClone(local_player);
 }
 
-export function set_local_player_rot(player) {
-    local_player.rot = player.rot;
+export function set_local_player_rot(rot) {
+    local_player.rot = rot;
 }
 
 /**
  * @param {{movement_x: number, movement_y: number}} mouse_inputs
  * @param {Record<string, boolean>} key_inputs
- * @returns {void}
  */
 export function player_update(mouse_inputs, key_inputs) {
     //view

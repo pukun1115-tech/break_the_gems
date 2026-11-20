@@ -23,7 +23,7 @@ import {
  */
 export function find_target(chunks, player, players) {
     const eye_y = (!player.crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
-    
+
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -42,7 +42,10 @@ export function find_target(chunks, player, players) {
         if (distance <= attack_max_distance) {
             const hit_p_id = check_point_player_collision(ray_x, ray_y, ray_z, players, player);
             if (hit_p_id !== null) {
-                return { type: "hit", id: hit_p_id };
+                return {
+                    type: "hit",
+                    id: hit_p_id
+                };
             }
         }
 
@@ -71,7 +74,12 @@ export function find_target(chunks, player, players) {
             continue;
         }
 
-        return { type: "break_block", chunk_key: chunk_key, pos: { x: local_x, y: local_y, z: local_z }, block_type: target_chunk.map[local_x][local_y][local_z].type };
+        return {
+            type: "break_block",
+            chunk_key: chunk_key,
+            pos: { x: local_x, y: local_y, z: local_z },
+            block_type: target_chunk.map[local_x][local_y][local_z].type
+        };
     }
     return null;
 }
@@ -110,7 +118,7 @@ export function break_block(chunk_key, pos, chunks) {
  */
 export function place_block(chunks, players, player, type) {
     const eye_y = (!player.crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
-    
+
     const rot_x = deg2rad(player.rot.x);
     const rot_y = deg2rad(player.rot.y);
     const rot_z = deg2rad(player.rot.z);
@@ -168,7 +176,7 @@ export function place_block(chunks, players, player, type) {
             ) {
                 break;
             }
-            
+
             const place_local_x = previous_x - place_chunk.x;
             const place_local_y = previous_y
             const place_local_z = previous_z - place_chunk.z;

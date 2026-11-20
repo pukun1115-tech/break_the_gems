@@ -68,9 +68,6 @@ socket.addEventListener("message", (event) => {
             for (const p of data.players) {
                 animation_frame.set(p.id, { walking: -1, hit: -1 });
                 players.set(p.id, p);
-                if (p.id === id) {
-                    set_local_player_rot(p);
-                }
             }
             team_point = data.team_point;
             for (const chunk_key of Object.keys(data.chunks)) {
@@ -80,6 +77,11 @@ socket.addEventListener("message", (event) => {
                 c.generate_mesh();
                 chunks.set(chunk_key, c);
             }
+            break;
+        }
+
+        case "set_rot": {
+            set_local_player_rot(data.r);
             break;
         }
 
@@ -178,12 +180,14 @@ socket.addEventListener("message", (event) => {
         }
 
         case "finish": {
-            is_match_finished = Boolean(data.f);
-            if (is_match_finished) {
-                winner = data.r;
-            } else {
-                remaining_time = data.t;
-            }
+            is_match_finished = true;
+            winner = data.r;
+            break;
+        }
+
+        case "start": {
+            is_match_finished = false;
+            remaining_time = data.t;
             break;
         }
 
@@ -196,6 +200,7 @@ socket.addEventListener("message", (event) => {
                 c.generate_mesh();
                 chunks.set(chunk_key, c);
             }
+            break;
         }
     }
 });

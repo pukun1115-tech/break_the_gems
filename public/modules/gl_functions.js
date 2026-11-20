@@ -149,7 +149,6 @@ export function create_texture(gl, source) {
  * @param {Record<string, WebGLBuffer>} vbos
  * @param {Record<string, number>} att_location
  * @param {Record<string, number>} att_stride
- * @returns {void}
  */
 export function set_attribute(gl, vbos, att_location, att_stride) {
     for (const key of Object.keys(vbos)) {
