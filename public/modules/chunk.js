@@ -40,7 +40,7 @@ export class Chunk {
         this.map = map;
     }
 
-    generate_mesh() {
+    delete_buffer() {
         if (this.ibo !== null) {
             gl.deleteBuffer(this.ibo);
         }
@@ -53,6 +53,10 @@ export class Chunk {
         if (this.texture_coord_vbo !== null) {
             gl.deleteBuffer(this.texture_coord_vbo);
         }
+    }
+
+    generate_mesh() {
+        this.delete_buffer();
         this.index_count = 0;
         let index_offset = 0;
         let pos = [];

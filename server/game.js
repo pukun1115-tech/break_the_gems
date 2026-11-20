@@ -335,24 +335,29 @@ export class Game {
             Game.update_player_mouse_click_right(player, input, state);
 
             //match finish?
-            if (Game.team_point.red === 0 && Game.team_point.blue === 0) {
-                Game.broadcast(JSON.stringify({
-                    type: "finish",
-                    f: 1,
-                    r: "draw"
-                }));
-            } else if (Game.team_point.red === 0) {
-                Game.broadcast(JSON.stringify({
-                    type: "finish",
-                    f: 1,
-                    r: "red"
-                }));
-            } else if (Game.team_point.blue === 0) {
-                Game.broadcast(JSON.stringify({
-                    type: "finish",
-                    f: 1,
-                    r: "blue"
-                }))
+            if (Game.team_point.red === 0 || Game.team_point.blue === 0) {
+                Game.is_match_finished = true;
+                Game.wait_remaining_time = MATCH_WAITING_TIME;
+
+                if (Game.team_point.red === 0 && Game.team_point.blue === 0) {
+                    Game.broadcast(JSON.stringify({
+                        type: "finish",
+                        f: 1,
+                        r: "draw"
+                    }));
+                } else if (Game.team_point.red === 0) {
+                    Game.broadcast(JSON.stringify({
+                        type: "finish",
+                        f: 1,
+                        r: "blue"
+                    }));
+                } else if (Game.team_point.blue === 0) {
+                    Game.broadcast(JSON.stringify({
+                        type: "finish",
+                        f: 1,
+                        r: "red"
+                    }));
+                }
             }
 
             if (Game.remaining_time <= 0) {
@@ -380,12 +385,21 @@ export class Game {
                         red: 0,
                         blue: 0
                     };
+                    Game.team_point = {
+                        red: 0,
+                        blue: 0
+                    };
+                    Game.broadcast(JSON.stringify({
+                        type: "update_tp",
+                        tp: Game.team_point
+                    }));
                     Game.players.clear();
                     Game.players_states.clear();
                     Game.player_inputs.clear();
                     for (const id of Game.sockets_by_id.keys()) {
                         const c = Game.player_count;
                         const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
+                        Game.player_count[team]++;
 
                         Game.set_initial_player(id, team);
                         Game.set_initial_player_input(id);
@@ -404,7 +418,7 @@ export class Game {
                     Game.remaining_time = MATCH_TIME;
                     Game.broadcast(JSON.stringify({
                         type: "finish",
-                        f: false,
+                        f: 0,
                         t: Game.remaining_time
                     }));
                     Game.broadcast(JSON.stringify({

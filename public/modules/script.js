@@ -184,11 +184,13 @@ socket.addEventListener("message", (event) => {
             } else {
                 remaining_time = data.t;
             }
+            break;
         }
 
         case "set_chunks": {
             for (const chunk_key of Object.keys(data.chunks)) {
                 const { x: pos_x, z: pos_z } = parse_chunk_key(chunk_key);
+                chunks.get(chunk_key).delete_buffer();
                 const c = new Chunk(pos_x, pos_z);
                 c.set_map(data.chunks[chunk_key]);
                 c.generate_mesh();
