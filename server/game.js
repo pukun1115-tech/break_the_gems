@@ -106,17 +106,21 @@ export class Game {
         });
     }
 
+    /**
+     * @param {WebSocket} socket
+     * @param {ID} id
+     */
     static add_player(socket, id) {
-        const c = Game.player_count;
-        const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
-
-        Game.set_initial_player_state(id);
-
-        Game.set_initial_player(id, team);
-
-        Game.player_count[team]++;
         Game.sockets_by_id.set(id, socket);
         Game.ids_by_socket.set(socket, id);
+
+        const c = Game.player_count;
+        const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
+        Game.player_count[team]++;
+
+        Game.set_initial_player(id, team);
+        Game.set_initial_player_input(id);
+        Game.set_initial_player_state(id);
 
         send_text_frame(socket, JSON.stringify({
             type: "init",
@@ -405,7 +409,7 @@ export class Game {
                         type: "finish",
                         r: "blue"
                     }));
-                } else if (Game.team_point.blue === 0) {
+                } else {
                     Game.broadcast(JSON.stringify({
                         type: "finish",
                         r: "red"
@@ -458,19 +462,12 @@ export class Game {
                     Game.set_initial_player_input(id);
                     Game.set_initial_player_state(id);
 
-                    const result = send_text_frame(socket, JSON.stringify({
+                    send_text_frame(socket, JSON.stringify({
                         type: "set_rot",
                         r: Game.players.get(id).rot
                     }));
-
-                    if (!result) {
-                        Game.remove_player(socket);
-                    }
                 }
-                Game.broadcast(JSON.stringify({
-                    type: "update_players",
-                    players: Array.from(Game.players.values())
-                }));
+                //update playersはupdate()の最後に
 
                 //reset chunks
                 Game.init_chunks();
@@ -497,7 +494,6 @@ export class Game {
                 }));
             }
         }
-
         Game.broadcast(JSON.stringify({
             type: "update_players",
             players: Array.from(Game.players.values())
@@ -519,6 +515,10 @@ export class Game {
         }
     }
 
+    /**
+     * @param {WebSocket} socket
+     * @param {string} text
+     */
     static handle_received_text(socket, text) {
         const id = Game.ids_by_socket.get(socket);
         if (id === undefined) {
@@ -591,6 +591,9 @@ export class Game {
         }
     }
 
+    /**
+     * @param {string} text
+     */
     static broadcast(text) {
         for (const s of Game.sockets_by_id.values()) {
             if (
