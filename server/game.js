@@ -62,11 +62,7 @@ export class Game {
         return t.charAt(0).toUpperCase() + t.slice(1);
     }
 
-    static add_player(socket) {
-        const id = Game.create_player_id(6);
-        const count = Game.player_count;
-        const team = (count.red === count.blue ? (Math.random() > 0.5 ? "red" : "blue") : (count.red > count.blue ? "blue" : "red"));
-
+    static set_initial_player_state(id) {
         Game.players_states.set(id, {
             break_time: Game.frame - BREAK_COOLDOWN,
             break_gem_time: Game.frame - BREAK_GEM_COOLDOWN,
@@ -74,7 +70,9 @@ export class Game {
             attack_time: Game.frame - ATTACK_COOLDOWN,
             velocity_y: 0,
         });
+    }
 
+    static set_initial_player(id, team) {
         Game.players.set(id, {
             id: id,
             hp: 100,
@@ -84,10 +82,9 @@ export class Game {
             rot: (team === "red" ? { x: 0, y: 45, z: 0 } : { x: 0, y: -135, z: 0 }),
             animation: { walking: false, hit: false }
         });
+    }
 
-        Game.player_count[team]++;
-        Game.sockets_by_id.set(id, socket);
-        Game.ids_by_socket.set(socket, id);
+    static set_initial_player_input(id) {
         Game.player_inputs.set(id, {
             key_inputs: {},
             mouse_inputs: {
@@ -95,6 +92,19 @@ export class Game {
                 right_click: false
             }
         });
+    }
+
+    static add_player(socket, id) {
+        const c = Game.player_count;
+        const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
+
+        Game.set_initial_player_state(id);
+
+        Game.set_initial_player(id, team);
+
+        Game.player_count[team]++;
+        Game.sockets_by_id.set(id, socket);
+        Game.ids_by_socket.set(socket, id);
 
         send_text_frame(socket, JSON.stringify({
             type: "init",
@@ -353,7 +363,10 @@ export class Game {
                 }));
             }
         }
-        Game.broadcast(JSON.stringify({ type: "update_players", players: Array.from(Game.players.values()) }));
+        Game.broadcast(JSON.stringify({
+            type: "update_players",
+            players: Array.from(Game.players.values())
+        }));
     }
 
     static tick() {
@@ -363,6 +376,21 @@ export class Game {
                 Game.wait_remaining_time--;
                 if (Game.wait_remaining_time < 0) {
                     //start new match
+                    Game.player_count = {
+                        red: 0,
+                        blue: 0
+                    };
+                    Game.players.clear();
+                    Game.players_states.clear();
+                    Game.player_inputs.clear();
+                    for (const id of Game.sockets_by_id.keys()) {
+                        const c = Game.player_count;
+                        const team = (c.red === c.blue ? (Math.random() > 0.5 ? "red" : "blue") : (c.red > c.blue ? "blue" : "red"));
+
+                        Game.set_initial_player(id, team);
+                        Game.set_initial_player_input(id);
+                        Game.set_initial_player_state(id);
+                    }
                     Game.init_chunks();
                     Game.broadcast(JSON.stringify({
                         type: "set_chunks",
@@ -378,6 +406,10 @@ export class Game {
                         type: "finish",
                         f: false,
                         t: Game.remaining_time
+                    }));
+                    Game.broadcast(JSON.stringify({
+                        type: "update_players",
+                        players: Array.from(Game.players.values())
                     }));
                 } else {
                     Game.broadcast(JSON.stringify({

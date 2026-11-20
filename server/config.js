@@ -51,7 +51,7 @@ export const MAX_BUFFER_SIZE = 512 * 512;
 export const MAX_PLAYERS = 6;
 export const SERVER_FPS = 20;
 export const MATCH_TIME = 10;
-export const MATCH_WAITING_TIME = 10;
+export const MATCH_WAITING_TIME = 5;
 
 export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;

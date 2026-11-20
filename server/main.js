@@ -30,7 +30,7 @@ server.on("upgrade", (request, socket, head) => {
         Game.remove_player(socket);
     }
 
-    Game.add_player(socket);
+    Game.add_player(socket, Game.create_player_id(6));
 
     let received_data_buffer = Buffer.alloc(0);
     if (head?.length > 0) {
