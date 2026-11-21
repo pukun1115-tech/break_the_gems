@@ -34,6 +34,7 @@ export class Chunk {
         this.position_vbo = null;
         this.color_vbo = null;
         this.texture_coord_vbo = null;
+        this.stage_vbo = null;
     }
 
     set_map(map) {
