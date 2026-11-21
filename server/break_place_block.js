@@ -190,7 +190,7 @@ export function place_block(chunks, players, player, type) {
             place_chunk.map[place_local_x][place_local_y][place_local_z] = { type: type, stage: 8 };
             let hit = false;
             for (const p of players.values()) {
-                if (check_player_chunk_collision(chunks, p.pos.x, p.pos.y, p.pos.z, p.crouch)) {
+                if (check_player_chunk_collision(chunks, p.pos.x, p.pos.y, p.pos.z, p.crouch) !== null) {
                     place_chunk.map[place_local_x][place_local_y][place_local_z].type = 0;
                     hit = true;
                     break;

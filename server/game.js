@@ -3,12 +3,18 @@ import { send_text_frame } from "./connection/socket.js";
 import {
     SERVER_FPS,
     GRAVITY,
+
+    PLAYER_HIT_X,
+    PLAYER_HIT_Z,
+
     PLAYER_MOVE_SPEED,
     PLAYER_JUMP_HEIGHT,
+
     BREAK_COOLDOWN,
     PLACE_COOLDOWN,
     ATTACK_COOLDOWN,
     BREAK_GEM_COOLDOWN,
+
     MATCH_TIME,
     MATCH_WAITING_TIME
 } from "./config.js";
@@ -179,11 +185,16 @@ export class Game {
         p.hp += amount;
     }
 
+    /**
+     * @param {Player} player
+     * @param {PlayerInput} input
+     * @param {number} delta_time
+     */
     static update_player_pos_xz(player, input, delta_time) {
         const cosy = Math.cos(deg2rad(player.rot.y));
         const siny = Math.sin(deg2rad(player.rot.y));
 
-        const n = 10;
+        const n = 1;
         for (let i = 1; i <= n; i++) {
             let next_x = player.pos.x;
             let next_z = player.pos.z;
@@ -205,11 +216,40 @@ export class Game {
                 next_z += PLAYER_MOVE_SPEED * delta_time * siny / n;
             }
 
-            if (!check_player_chunk_collision(Game.chunks, next_x, player.pos.y, player.pos.z, player.crouch)) {
+            const collision_x = check_player_chunk_collision(
+                Game.chunks,
+                next_x,
+                player.pos.y,
+                player.pos.z,
+                player.crouch
+            );
+
+            if (collision_x === null) {
                 player.pos.x = next_x;
+            } else {
+                if (next_x > player.pos.x) {
+                    player.pos.x = Math.floor((collision_x.min_x - PLAYER_HIT_X / 2) * 100) / 100;
+                } else if (next_x < player.pos.x) {
+                    player.pos.x = Math.ceil((collision_x.max_x + PLAYER_HIT_X / 2) * 100) / 100;
+                }
             }
-            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, next_z, player.crouch)) {
+
+            const collision_z = check_player_chunk_collision(
+                Game.chunks,
+                player.pos.x,
+                player.pos.y,
+                next_z,
+                player.crouch
+            );
+
+            if (collision_z === null) {
                 player.pos.z = next_z;
+            } else {
+                if (next_z > player.pos.z) {
+                    player.pos.z = Math.floor((collision_z.min_z - PLAYER_HIT_Z / 2) * 100) / 100;
+                } else if (next_z < player.pos.z) {
+                    player.pos.z = Math.ceil((collision_z.max_z + PLAYER_HIT_Z / 2) * 100) / 100;
+                }
             }
         }
     }
@@ -218,7 +258,7 @@ export class Game {
         let next_y = player.pos.y;
 
         if (player.crouch && input.key_inputs["KeyC"] !== true) {
-            if (!check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false)) {
+            if (check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false) === null) {
                 player.crouch = false;
             }
         } else {
@@ -237,13 +277,13 @@ export class Game {
 
         next_y = player.pos.y + state.velocity_y * delta_time;
 
-        if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
+        if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch) !== null) {
             if (state.velocity_y < 0) {
-                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
+                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch) !== null) {
                     next_y += 0.005;
                 }
             } else {
-                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch)) {
+                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch) !== null) {
                     next_y -= 0.005;
                 }
             }

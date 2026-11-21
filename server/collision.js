@@ -18,7 +18,14 @@ import {
  * @param {number} py
  * @param {number} pz
  * @param {boolean} crouch
- * @returns {boolean}
+ * @returns {{
+ *     max_x: number,
+ *     min_x: number,
+ *     max_z: number,
+ *     min_z: number
+ *     max_y: number,
+ *     min_y: number,
+ * } | null}
  */
 export function check_player_chunk_collision(chunks, px, py, pz, crouch) {
     const p_max_x = px + PLAYER_HIT_X / 2;
@@ -43,25 +50,32 @@ export function check_player_chunk_collision(chunks, px, py, pz, crouch) {
                         continue;
                     }
 
-                    const b_maxX = c.x + x + 1;
-                    const b_minX = c.x + x;
-                    const b_maxZ = c.z + z + 1;
-                    const b_minZ = c.z + z;
-                    const b_maxY = y + 1;
-                    const b_minY = y;
+                    const b_max_x = c.x + x + 1;
+                    const b_min_x = c.x + x;
+                    const b_max_z = c.z + z + 1;
+                    const b_min_z = c.z + z;
+                    const b_max_y = y + 1;
+                    const b_min_y = y;
 
-                    const hitX = p_max_x > b_minX && p_min_x < b_maxX;
-                    const hitY = p_max_y > b_minY && p_min_y < b_maxY;
-                    const hitZ = p_max_z > b_minZ && p_min_z < b_maxZ;
+                    const hitX = p_max_x > b_min_x && p_min_x < b_max_x;
+                    const hitY = p_max_y > b_min_y && p_min_y < b_max_y;
+                    const hitZ = p_max_z > b_min_z && p_min_z < b_max_z;
 
                     if (hitX && hitY && hitZ) {
-                        return true;
+                        return {
+                            max_x: b_max_x,
+                            min_x: b_min_x,
+                            max_z: b_max_z,
+                            min_z: b_min_z,
+                            max_y: b_max_y,
+                            min_y: b_min_y
+                        };
                     }
                 }
             }
         }
     }
-    return false;
+    return null;
 }
 
 /**
