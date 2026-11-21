@@ -6,12 +6,15 @@ import {
 const local_player = {
     rot: { x: 0, y: 0, z: 0 },
     FOV: 80,
-}
+};
 
 export function get_local_player() {
     return structuredClone(local_player);
 }
 
+/**
+ * @param {{ x: number, y: number, z: number }} rot
+ */
 export function set_local_player_rot(rot) {
     local_player.rot = rot;
 }
