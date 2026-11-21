@@ -385,11 +385,13 @@ export class Game {
             Game.update_player_animation(player, input);
 
             //mouse input
-            if (input.mouse_inputs.left_click) {
-                Game.update_player_mouse_click_left(player, state);
-            }
-            if (input.mouse_inputs.right_click) {
-                Game.update_player_mouse_click_right(player, state);
+            if (!Game.is_match_finished) {
+                if (input.mouse_inputs.left_click) {
+                    Game.update_player_mouse_click_left(player, state);
+                }
+                if (input.mouse_inputs.right_click) {
+                    Game.update_player_mouse_click_right(player, state);
+                }
             }
         }
 
