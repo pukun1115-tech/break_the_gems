@@ -1,6 +1,12 @@
 import { gl } from "./gl_draw.js";
 import { create_ibo, create_vbo } from "./gl_functions.js";
-import { CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z, BLOCK_TEXTURECOORD } from "./config.js";
+import {
+    CHUNK_SIZE_X,
+    CHUNK_SIZE_Y,
+    CHUNK_SIZE_Z,
+    
+    BLOCK_TEXTURECOORD
+} from "./config.js";
 
 /**
  * @param {number} x
@@ -27,6 +33,7 @@ export class Chunk {
     constructor(x, z) {
         this.x = x * CHUNK_SIZE_X;
         this.z = z * CHUNK_SIZE_Z;
+        /** @type {Array<Array<Array<{ type: number, stage: number }>>> | null} */
         this.map = null;
 
         this.index_count = null;
