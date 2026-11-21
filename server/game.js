@@ -6,6 +6,7 @@ import {
 
     PLAYER_HIT_X,
     PLAYER_HIT_Z,
+    PLAYER_HIT_Y,
 
     PLAYER_MOVE_SPEED,
     PLAYER_JUMP_HEIGHT,
@@ -16,7 +17,7 @@ import {
     BREAK_GEM_COOLDOWN,
 
     MATCH_TIME,
-    MATCH_WAITING_TIME
+    MATCH_WAITING_TIME,
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
@@ -254,11 +255,25 @@ export class Game {
         }
     }
 
+    /**
+     * @param {Player} player
+     * @param {PlayerInput} input
+     * @param {PlayerState} state
+     * @param {number} delta_time
+     */
     static update_player_pos_y(player, input, state, delta_time) {
         let next_y = player.pos.y;
 
         if (player.crouch && input.key_inputs["KeyC"] !== true) {
-            if (check_player_chunk_collision(Game.chunks, player.pos.x, player.pos.y, player.pos.z, false) === null) {
+            if (
+                check_player_chunk_collision(
+                    Game.chunks,
+                    player.pos.x,
+                    player.pos.y,
+                    player.pos.z,
+                    false
+                ) === null
+            ) {
                 player.crouch = false;
             }
         } else {
@@ -275,23 +290,26 @@ export class Game {
             }
         }
 
-        next_y = player.pos.y + state.velocity_y * delta_time;
+        next_y += state.velocity_y * delta_time;
 
-        if (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch) !== null) {
-            if (state.velocity_y < 0) {
-                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch) !== null) {
-                    next_y += 0.005;
-                }
-            } else {
-                while (check_player_chunk_collision(Game.chunks, player.pos.x, next_y, player.pos.z, player.crouch) !== null) {
-                    next_y -= 0.005;
-                }
+        const collision_y = check_player_chunk_collision(
+            Game.chunks,
+            player.pos.x,
+            next_y,
+            player.pos.z,
+            player.crouch
+        );
+
+        if (collision_y === null) {
+            player.pos.y = next_y;
+        } else {
+            if (next_y > player.pos.y) {
+                player.pos.y = Math.floor((collision_y.min_y - PLAYER_HIT_Y) * 100) / 100;
+            } else if (next_y < player.pos.y) {
+                player.pos.y = Math.ceil(collision_y.max_y * 100) / 100;
             }
-
             state.velocity_y = 0;
         }
-
-        player.pos.y = next_y;
     }
 
     /**
