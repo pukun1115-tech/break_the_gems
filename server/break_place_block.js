@@ -102,6 +102,17 @@ export function break_block(chunk_key, pos, chunks, amount) {
         return null;
     }
 
+    if (
+        pos.x < 0 ||
+        pos.x >= CHUNK_SIZE_X ||
+        pos.y < 0 ||
+        pos.y >= CHUNK_SIZE_Y ||
+        pos.z < 0 ||
+        pos.z >= CHUNK_SIZE_Z
+    ) {
+        return null;
+    }
+
     const block = target_chunk.map[pos.x][pos.y][pos.z];
     if (block.type === 0 || block.type === 1) {
         return null;
