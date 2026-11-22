@@ -435,9 +435,9 @@ export class Game {
      */
     static update_player_mouse_click_right(player, state) {
         if (state.place_time + PLACE_COOLDOWN <= Game.frame) {
-            state.place_time = Game.frame;
             const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
             if (result !== null) {
+                state.place_time = Game.frame;
                 Game.broadcast(JSON.stringify({
                     type: "update_map",
                     chunk_key: result.chunk_key,
