@@ -16,37 +16,40 @@ import {
 /** @import { Vec3, ID, Player } from "./types.js" */
 
 /**
- * @param {Map<string, Chunk>} chunks
- * @param {Player} player
- * @param {Map<string, Player>} players
+ * @param {Map<string, Chunk> | null} chunks
+ * @param {{ pos: Vec3, rot: Vec3 }} t
+ * @param {"red" | "blue" | null} team
+ * @param {Map<string, Player> | null} players
+ * @param {number} break_max_distance
+ * @param {number} attack_max_distance
  * @returns {{ type: "break_block", chunk_key: string, pos: Vec3, block: { type: number, stage: number }, block_type: number } | { type: "hit", id: ID } | null}
  */
-export function find_target(chunks, player, players) {
-    const eye_y = (!player.crouch ? PLAYER_EYE_Y : PLAYER_EYE_Y_CROUCH);
-
-    const rot_x = deg2rad(player.rot.x);
-    const rot_y = deg2rad(player.rot.y);
-    const rot_z = deg2rad(player.rot.z);
+export function find_target(chunks, t, team, players, break_max_distance, attack_max_distance) {
+    const rot_x = deg2rad(t.rot.x);
+    const rot_y = deg2rad(t.rot.y);
+    const rot_z = deg2rad(t.rot.z);
 
     const direction = rotate_vector_XYZ({ x: 0, y: 0, z: 1 }, { x: rot_x, y: rot_y, z: rot_z });
 
     const ray_step = 0.05;
-    const break_max_distance = 4;
-    const attack_max_distance = 2;
 
     for (let distance = 0; distance <= break_max_distance; distance += ray_step) {
-        const ray_x = player.pos.x + direction.x * distance;
-        const ray_y = player.pos.y + eye_y + direction.y * distance;
-        const ray_z = player.pos.z + direction.z * distance;
+        const ray_x = t.pos.x + direction.x * distance;
+        const ray_y = t.pos.y + direction.y * distance;
+        const ray_z = t.pos.z + direction.z * distance;
 
-        if (distance <= attack_max_distance) {
-            const hit_p_id = check_point_player_collision(ray_x, ray_y, ray_z, players, player);
+        if (distance <= attack_max_distance && players !== null) {
+            const hit_p_id = check_point_player_collision(ray_x, ray_y, ray_z, players, team);
             if (hit_p_id !== null) {
                 return {
                     type: "hit",
                     id: hit_p_id
                 };
             }
+        }
+
+        if (chunks === null) {
+            continue;
         }
 
         const world_x = Math.floor(ray_x);
@@ -70,6 +73,7 @@ export function find_target(chunks, player, players) {
             local_y < 0 ||
             local_y >= CHUNK_SIZE_Y ||
             target_chunk.map[local_x][local_y][local_z].type === 0
+
         ) {
             continue;
         }
@@ -81,6 +85,7 @@ export function find_target(chunks, player, players) {
             block_type: target_chunk.map[local_x][local_y][local_z].type
         };
     }
+
     return null;
 }
 
@@ -88,9 +93,10 @@ export function find_target(chunks, player, players) {
  * @param {string} chunk_key
  * @param {Vec3} pos
  * @param {Map<string, Chunk>} chunks
+ * @param {number} amount
  * @returns {{ chunk_key: string, pos: Vec3, block: { type: number, stage: number } } | null}
  */
-export function break_block(chunk_key, pos, chunks) {
+export function break_block(chunk_key, pos, chunks, amount) {
     const target_chunk = chunks.get(chunk_key);
     if (target_chunk === undefined) {
         return null;
@@ -101,7 +107,7 @@ export function break_block(chunk_key, pos, chunks) {
         return null;
     }
 
-    block.stage--;
+    block.stage -= amount;
     if (block.stage <= 0) {
         block.type = 0;
         block.stage = 0;
@@ -191,7 +197,7 @@ export function place_block(chunks, players, player, type) {
             let hit = false;
             for (const p of players.values()) {
                 if (check_player_chunk_collision(chunks, p.pos.x, p.pos.y, p.pos.z, p.crouch) !== null) {
-                    place_chunk.map[place_local_x][place_local_y][place_local_z].type = 0;
+                    place_chunk.map[place_local_x][place_local_y][place_local_z] = { type: 0, stage: 0 };
                     hit = true;
                     break;
                 }

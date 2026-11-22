@@ -8,6 +8,9 @@ import {
     PLAYER_HIT_Z,
     PLAYER_HIT_Y,
 
+    PLAYER_EYE_Y_CROUCH,
+    PLAYER_EYE_Y,
+
     PLAYER_MOVE_SPEED,
     PLAYER_JUMP_HEIGHT,
 
@@ -15,15 +18,16 @@ import {
     PLACE_COOLDOWN,
     ATTACK_COOLDOWN,
     BREAK_GEM_COOLDOWN,
+    SUPER_BREAK_COOLDOWN,
 
     MATCH_TIME,
-    MATCH_WAITING_TIME,
+    MATCH_WAITING_TIME
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
-/** @import { WebSocket, ID, Player, PlayerInput, PlayerState } from "./types.js" */
+/** @import { WebSocket, Vec3, ID, Player, PlayerInput, PlayerState } from "./types.js" */
 
 export class Game {
     static frame = 0;
@@ -57,6 +61,9 @@ export class Game {
 
     /** @type {Map<string, Chunk>} */
     static chunks = new Map();
+
+    /** @type {Set<{ pos: Vec3, rot: Vec3 }>} */
+    static super_break = new Set();
 
     static init_chunks() {
         Game.chunks = create_initial_chunks();
@@ -92,6 +99,7 @@ export class Game {
             place_time: Game.frame - PLACE_COOLDOWN,
             attack_time: Game.frame - ATTACK_COOLDOWN,
             velocity_y: 0,
+            super_break_time: Game.frame - SUPER_BREAK_COOLDOWN
         });
     }
 
@@ -349,7 +357,10 @@ export class Game {
         const can_break_gem = (state.break_gem_time + BREAK_GEM_COOLDOWN <= Game.frame);
         const can_attack = (state.attack_time + ATTACK_COOLDOWN <= Game.frame);
 
-        const target = find_target(Game.chunks, player, Game.players);
+        const eye = structuredClone({ pos: player.pos, rot: player.rot });
+        eye.pos.y += (player.crouch ? PLAYER_EYE_Y_CROUCH : PLAYER_EYE_Y);
+
+        const target = find_target(Game.chunks, eye, player.team, Game.players, 4, 2);
         if (target === null) {
             return;
         }
@@ -364,11 +375,15 @@ export class Game {
                 Game.remove_player(socket);
             }
         } else if (target.type === "break_block") {
+            if (target.block_type === 0) {
+                return;
+            }
+
             if (
                 can_break &&
                 (target.block_type !== 3 && target.block_type !== 5)
             ) {
-                const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
                 if (result !== null) {
                     state.break_time = Game.frame;
 
@@ -386,7 +401,7 @@ export class Game {
                     (player.team === "blue" && target.block_type === 3)
                 )
             ) {
-                const result = break_block(target.chunk_key, target.pos, Game.chunks);
+                const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
                 if (result !== null) {
                     state.break_gem_time = Game.frame;
 
@@ -433,6 +448,33 @@ export class Game {
         }
     }
 
+    static update_super_break() {
+        for (const s of Game.super_break) {
+            const target = find_target(Game.chunks, s, null, null, 128, 0);
+            if (target === null || target.type === "hit") {
+                continue;
+            }
+
+            if (
+                (target.block_type === 1 || target.block_type === 3 || target.block_type === 5)
+            ) {
+                Game.super_break.delete(s);
+                continue;
+            }
+
+            const result = break_block(target.chunk_key, target.pos, Game.chunks, 8);
+            if (result !== null) {
+                Game.broadcast(JSON.stringify({
+                    type: "update_map",
+                    chunk_key: result.chunk_key,
+                    pos: result.pos,
+                    block: result.block
+                }));
+            }
+
+        }
+    }
+
     static update() {
         const delta_time = 1 / SERVER_FPS;
         Game.tick();
@@ -462,6 +504,18 @@ export class Game {
                     Game.update_player_mouse_click_right(player, state);
                 }
             }
+
+            //KeyQ
+            if (input.key_inputs["KeyQ"] === true) {
+                if (state.super_break_time + SUPER_BREAK_COOLDOWN <= Game.frame) {
+                    state.super_break_time = Game.frame;
+                    const t = structuredClone({ pos: player.pos, rot: player.rot });
+                    t.pos.y += PLAYER_EYE_Y
+                    Game.super_break.add(t);
+                }
+            }
+
+            Game.update_super_break();
         }
 
         //match finish?

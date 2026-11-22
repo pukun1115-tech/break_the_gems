@@ -101,15 +101,12 @@ export function is_on_ground(chunks, px, py, pz, crouch) {
  * @param {number} py
  * @param {number} pz
  * @param {Map<ID, Player>} players
- * @param {Player} player
+ * @param {"red" | "blue"} team
  * @returns {ID | null}
  */
-export function check_point_player_collision(px, py, pz, players, player) {
+export function check_point_player_collision(px, py, pz, players, team) {
     for (const p of players.values()) {
-        if (p.id === player.id) {
-            continue;
-        }
-        if (p.team === player.team) {
+        if (p.team === team) {
             continue;
         }
         if (

@@ -72,3 +72,4 @@ export const BREAK_COOLDOWN = (0.5 / 8) * SERVER_FPS;
 export const BREAK_GEM_COOLDOWN = (4 / 8) * SERVER_FPS;
 export const PLACE_COOLDOWN = 0.25 * SERVER_FPS;
 export const ATTACK_COOLDOWN = 0.2 * SERVER_FPS;
+export const SUPER_BREAK_COOLDOWN = 1 * SERVER_FPS;

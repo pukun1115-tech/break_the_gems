@@ -37,6 +37,7 @@
  * @property {number} place_time
  * @property {number} attack_time
  * @property {number} velocity_y
+ * @property {number} super_break_time
  */
 
 /**
