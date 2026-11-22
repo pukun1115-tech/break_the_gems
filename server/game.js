@@ -67,8 +67,19 @@ export class Game {
      * @returns {ID}
      */
     static create_player_id(length) {
-        const t = Math.random().toString(36).substring(2, 2 + length);
-        return t.charAt(0).toUpperCase() + t.slice(1);
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        while (true) {
+            let t = "";
+            for (let i = 0; i < length; i++) {
+                t += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            const id = t.charAt(0).toUpperCase() + t.slice(1);
+
+            if (!Game.ids_by_socket.has(id)) {
+                return id;
+            }
+        }
     }
 
     /**
