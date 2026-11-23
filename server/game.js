@@ -51,16 +51,6 @@ export class Game {
     /** @type {Map<WebSocket, ID>} */
     static ids_by_socket = new Map();
 
-    static player_count = {
-        red: 0,
-        blue: 0
-    };
-
-    static team_point = {
-        red: 8,
-        blue: 8
-    };
-
     /** @type {Map<string, Chunk>} */
     static chunks = new Map();
 
@@ -69,6 +59,18 @@ export class Game {
 
     /** @type {Map<ID, number>} */
     static the_dead = new Map();
+
+    /** @type {{ red: number, blue: number }} */
+    static player_count = {
+        red: 0,
+        blue: 0
+    };
+
+    /** @type {{ red: number, blue: number }} */
+    static team_point = {
+        red: 8,
+        blue: 8
+    };
 
     static init_chunks() {
         Game.chunks = create_initial_chunks();
@@ -783,6 +785,7 @@ export class Game {
                 !send_text_frame(s, text)
             ) {
                 Game.remove_player(s);
+                socket.destroy();
             }
         }
     }
