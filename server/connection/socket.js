@@ -38,7 +38,7 @@ export function send_text_frame(socket, text) {
         payload.copy(frame, 10);
     }
 
-    if (socket.writable) {
+    if (socket.writable && !socket.destroyed) {
         socket.write(frame);
         return true;
     }
@@ -65,7 +65,7 @@ export function send_close_frame(socket, status_code = 1000, reason = "") {
     frame[0] = FIN | CLOSE_OPCODE;
     frame[1] = payload.length;
     payload.copy(frame, 2);
-    if (socket.writable) {
+    if (socket.writable && !socket.destroyed) {
         socket.write(frame);
         return true;
     }
@@ -87,7 +87,7 @@ export function send_ping_frame(socket, payload = Buffer.alloc(0)) {
     frame[0] = FIN | PING_OPCODE;
     frame[1] = payload.length;
     payload.copy(frame, 2);
-    if (socket.writable) {
+    if (socket.writable && !socket.destroyed) {
         socket.write(frame);
         return true;
     }
@@ -109,7 +109,7 @@ export function send_pong_frame(socket, payload = Buffer.alloc(0)) {
     frame[0] = FIN | PONG_OPCODE;
     frame[1] = payload.length;
     payload.copy(frame, 2);
-    if (socket.writable) {
+    if (socket.writable && !socket.destroyed) {
         socket.write(frame);
         return true;
     }
