@@ -785,7 +785,7 @@ export class Game {
                 !send_text_frame(s, text)
             ) {
                 Game.remove_player(s);
-                socket.destroy();
+                s.destroy();
             }
         }
     }
