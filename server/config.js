@@ -57,6 +57,8 @@ export const CHUNK_SIZE_X = 16;
 export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 16;
 
+export const COLLISION_EPSILON = 0.001;
+
 export const PLAYER_HIT_X = 0.4;
 export const PLAYER_HIT_Y = 1.6;
 export const PLAYER_HIT_Y_CROUCH = 1.4;

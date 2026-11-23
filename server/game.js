@@ -3,6 +3,7 @@ import { send_text_frame } from "./connection/socket.js";
 import {
     SERVER_FPS,
     GRAVITY,
+    COLLISION_EPSILON,
 
     PLAYER_HIT_X,
     PLAYER_HIT_Z,
@@ -248,9 +249,9 @@ export class Game {
                 player.pos.x = next_x;
             } else {
                 if (next_x > player.pos.x) {
-                    player.pos.x = collision_x.min_x - PLAYER_HIT_X / 2;
+                    player.pos.x = collision_x.min_x - PLAYER_HIT_X / 2 - COLLISION_EPSILON;
                 } else if (next_x < player.pos.x) {
-                    player.pos.x = collision_x.max_x + PLAYER_HIT_X / 2;
+                    player.pos.x = collision_x.max_x + PLAYER_HIT_X / 2 + COLLISION_EPSILON;
                 }
             }
 
@@ -266,9 +267,9 @@ export class Game {
                 player.pos.z = next_z;
             } else {
                 if (next_z > player.pos.z) {
-                    player.pos.z = collision_z.min_z - PLAYER_HIT_Z / 2;
+                    player.pos.z = collision_z.min_z - PLAYER_HIT_Z / 2 - COLLISION_EPSILON;
                 } else if (next_z < player.pos.z) {
-                    player.pos.z = collision_z.max_z + PLAYER_HIT_Z / 2;
+                    player.pos.z = collision_z.max_z + PLAYER_HIT_Z / 2 + COLLISION_EPSILON;
                 }
             }
         }
@@ -323,9 +324,9 @@ export class Game {
             player.pos.y = next_y;
         } else {
             if (next_y > player.pos.y) {
-                player.pos.y = collision_y.min_y - PLAYER_HIT_Y;
+                player.pos.y = collision_y.min_y - PLAYER_HIT_Y - COLLISION_EPSILON;
             } else if (next_y < player.pos.y) {
-                player.pos.y = collision_y.max_y;
+                player.pos.y = collision_y.max_y + COLLISION_EPSILON;
             }
             state.velocity_y = 0;
         }
@@ -619,9 +620,19 @@ export class Game {
                 }));
             }
         }
+
+
+        const s_players = structuredClone(Game.players);
+        for (const id of s_players.keys()) {
+            const p = s_players.get(id);
+            p.pos.x = Math.floor(p.pos.x * 100) / 100;
+            p.pos.y = Math.floor(p.pos.y * 100) / 100;
+            p.pos.z = Math.floor(p.pos.z * 100) / 100;
+        }
+
         Game.broadcast(JSON.stringify({
             type: "update_players",
-            players: Array.from(Game.players.values())
+            players: Array.from(s_players.values())
         }));
     }
 
