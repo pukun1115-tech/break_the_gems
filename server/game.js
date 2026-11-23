@@ -248,9 +248,9 @@ export class Game {
                 player.pos.x = next_x;
             } else {
                 if (next_x > player.pos.x) {
-                    player.pos.x = Math.floor((collision_x.min_x - PLAYER_HIT_X / 2) * 100) / 100;
+                    player.pos.x = collision_x.min_x - PLAYER_HIT_X / 2;
                 } else if (next_x < player.pos.x) {
-                    player.pos.x = Math.ceil((collision_x.max_x + PLAYER_HIT_X / 2) * 100) / 100;
+                    player.pos.x = collision_x.max_x + PLAYER_HIT_X / 2;
                 }
             }
 
@@ -266,9 +266,9 @@ export class Game {
                 player.pos.z = next_z;
             } else {
                 if (next_z > player.pos.z) {
-                    player.pos.z = Math.floor((collision_z.min_z - PLAYER_HIT_Z / 2) * 100) / 100;
+                    player.pos.z = collision_z.min_z - PLAYER_HIT_Z / 2;
                 } else if (next_z < player.pos.z) {
-                    player.pos.z = Math.ceil((collision_z.max_z + PLAYER_HIT_Z / 2) * 100) / 100;
+                    player.pos.z = collision_z.max_z + PLAYER_HIT_Z / 2;
                 }
             }
         }
@@ -323,9 +323,9 @@ export class Game {
             player.pos.y = next_y;
         } else {
             if (next_y > player.pos.y) {
-                player.pos.y = Math.floor((collision_y.min_y - PLAYER_HIT_Y) * 100) / 100;
+                player.pos.y = collision_y.min_y - PLAYER_HIT_Y;
             } else if (next_y < player.pos.y) {
-                player.pos.y = Math.ceil(collision_y.max_y * 100) / 100;
+                player.pos.y = collision_y.max_y;
             }
             state.velocity_y = 0;
         }
