@@ -114,7 +114,7 @@ export function check_point_player_collision(px, py, pz, players, team) {
             px >= p.pos.x - PLAYER_HIT_X / 2 &&
             px <= p.pos.x + PLAYER_HIT_X / 2 &&
             py >= p.pos.y &&
-            py <= p.pos.y + PLAYER_HIT_Y &&
+            py <= p.pos.y + (p.crouch ? PLAYER_HIT_Y_CROUCH : PLAYER_HIT_Y) &&
             pz >= p.pos.z - PLAYER_HIT_Z / 2 &&
             pz <= p.pos.z + PLAYER_HIT_Z / 2
         ) {
