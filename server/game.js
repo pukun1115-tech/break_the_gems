@@ -450,6 +450,10 @@ export class Game {
     }
 
     static update_super_break() {
+        if (Game.is_match_finished) {
+            return;
+        }
+
         const n = 4;
         for (const s of Game.super_break) {
             for (let i = 0; i < n; i++) {
