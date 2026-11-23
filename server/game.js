@@ -186,6 +186,14 @@ export class Game {
         if (id === undefined) {
             return;
         }
+        
+        Game.sockets_by_id.delete(id);
+        Game.ids_by_socket.delete(socket);
+        Game.players.delete(id);
+        Game.player_inputs.delete(id);
+        Game.players_states.delete(id);
+        Game.the_dead.delete(id);
+        Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
 
         const player = Game.players.get(id);
         if (player === undefined) {
@@ -193,14 +201,6 @@ export class Game {
         }
 
         Game.player_count[player.team]--;
-        Game.sockets_by_id.delete(id);
-        Game.ids_by_socket.delete(socket);
-        Game.players.delete(id);
-        Game.player_inputs.delete(id);
-        Game.players_states.delete(id);
-        Game.the_dead.delete(id);
-
-        Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
     }
 
     /**
