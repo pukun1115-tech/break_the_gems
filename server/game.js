@@ -450,29 +450,31 @@ export class Game {
     }
 
     static update_super_break() {
+        const n = 4;
         for (const s of Game.super_break) {
-            const target = find_target(Game.chunks, s, null, null, 128, 0);
-            if (target === null || target.type === "hit") {
-                continue;
-            }
+            for (let i = 0; i < n; i++) {
+                const target = find_target(Game.chunks, s, null, null, 128, 0);
+                if (target === null || target.type === "hit") {
+                    continue;
+                }
 
-            if (
-                (target.block_type === 1 || target.block_type === 3 || target.block_type === 5)
-            ) {
-                Game.super_break.delete(s);
-                continue;
-            }
+                if (
+                    (target.block_type === 1 || target.block_type === 3 || target.block_type === 5)
+                ) {
+                    Game.super_break.delete(s);
+                    break;
+                }
 
-            const result = break_block(target.chunk_key, target.pos, Game.chunks, 8);
-            if (result !== null) {
-                Game.broadcast(JSON.stringify({
-                    type: "update_map",
-                    chunk_key: result.chunk_key,
-                    pos: result.pos,
-                    block: result.block
-                }));
+                const result = break_block(target.chunk_key, target.pos, Game.chunks, 8);
+                if (result !== null) {
+                    Game.broadcast(JSON.stringify({
+                        type: "update_map",
+                        chunk_key: result.chunk_key,
+                        pos: result.pos,
+                        block: result.block
+                    }));
+                }
             }
-
         }
     }
 
