@@ -20,6 +20,7 @@ import {
     ATTACK_COOLDOWN,
     BREAK_GEM_COOLDOWN,
     SUPER_BREAK_COOLDOWN,
+    RESPAWN_COOLDOWN,
 
     MATCH_TIME,
     MATCH_WAITING_TIME
@@ -66,6 +67,9 @@ export class Game {
     /** @type {Set<{ pos: Vec3, rot: Vec3 }>} */
     static super_break = new Set();
 
+    /** @type {Map<ID, number>} */
+    static the_dead = new Map();
+
     static init_chunks() {
         Game.chunks = create_initial_chunks();
     }
@@ -100,7 +104,8 @@ export class Game {
             place_time: Game.frame - PLACE_COOLDOWN,
             attack_time: Game.frame - ATTACK_COOLDOWN,
             velocity_y: 0,
-            super_break_time: Game.frame - SUPER_BREAK_COOLDOWN
+            super_break_time: Game.frame - SUPER_BREAK_COOLDOWN,
+            died_time: 0 - RESPAWN_COOLDOWN
         });
     }
 
@@ -114,6 +119,7 @@ export class Game {
             hp: 100,
             team: team,
             crouch: false,
+            dead: false,
             pos: (team === "red" ? { x: 1.5, y: 16, z: 1.5 } : { x: 30.5, y: 16, z: 30.5 }),
             rot: (team === "red" ? { x: 0, y: 45, z: 0 } : { x: 0, y: -135, z: 0 }),
             animation: { walking: false, hit: false }
@@ -190,6 +196,7 @@ export class Game {
         Game.players.delete(id);
         Game.player_inputs.delete(id);
         Game.players_states.delete(id);
+        Game.the_dead.delete(id);
 
         Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
     }
@@ -203,7 +210,15 @@ export class Game {
         if (p === undefined) {
             return;
         }
-        p.hp += amount;
+
+        p.hp = Math.max(Math.min(p.hp + amount, 100), 0);
+        if (p.hp === 0) {
+            p.dead = true;
+            send_text_frame(Game.sockets_by_id.get(id), JSON.stringify({
+                type: "died"
+            }));
+            Game.the_dead.set(id, Game.frame);
+        }
     }
 
     /**
@@ -370,11 +385,7 @@ export class Game {
             state.attack_time = Game.frame;
 
             Game.add_player_hp(target.id, -20);
-            if (
-                !send_text_frame(socket, JSON.stringify({ type: "attack" }))
-            ) {
-                Game.remove_player(socket);
-            }
+            send_text_frame(socket, JSON.stringify({ type: "attack" }));
         } else if (target.type === "break_block") {
             if (target.block_type === 0) {
                 return;
@@ -482,14 +493,40 @@ export class Game {
         }
     }
 
+    static update_the_dead() {
+        for (const id of Game.the_dead.keys()) {
+            if (Game.the_dead.get(id) + RESPAWN_COOLDOWN <= Game.frame) {
+                Game.set_initial_player(id, Game.players.get(id).team);
+                Game.the_dead.delete(id);
+
+                send_text_frame(Game.sockets_by_id.get(id), JSON.stringify({
+                    type: "set_rot",
+                    r: Game.players.get(id).rot
+                }));
+                send_text_frame(Game.sockets_by_id.get(id), JSON.stringify({
+                    type: "respawn"
+                }));
+            } else if ((Game.frame - Game.the_dead.get(id)) % SERVER_FPS === 0) {
+                send_text_frame(Game.sockets_by_id.get(id), JSON.stringify({
+                    type: "up_rt",
+                    t: (RESPAWN_COOLDOWN - (Game.frame - Game.the_dead.get(id))) / SERVER_FPS
+                }));
+            }
+        }
+    }
+
     static update() {
         const delta_time = 1 / SERVER_FPS;
         Game.tick();
         for (const id of Game.ids_by_socket.values()) {
-            const input = Game.player_inputs.get(id);
             const player = Game.players.get(id);
+            const input = Game.player_inputs.get(id);
             const state = Game.players_states.get(id);
             if (input === undefined || player === undefined || state === undefined) {
+                continue;
+            }
+
+            if (player.dead) {
                 continue;
             }
 
@@ -521,9 +558,13 @@ export class Game {
                     Game.super_break.add(t);
                 }
             }
-
-            Game.update_super_break();
         }
+
+        //super break
+        Game.update_super_break();
+
+        //respawning
+        Game.update_the_dead();
 
         //match finish?
         if (!Game.is_match_finished) {

@@ -1,18 +1,21 @@
 import { WEBSOCKET_PROTOCOL } from "./config.js";
 import { Chunk, parse_chunk_key } from "./chunk.js";
-import { player_update, get_local_player, set_local_player_rot, get_interpolated_players } from "./player.js";
+import { update_local_player, get_local_player, set_local_player_rot, get_interpolated_players } from "./player.js";
 import { gl_draw, gl_canvas } from "./gl_draw.js";
 import { ui_draw, ui_canvas } from "./ui_draw.js";
 
 const socket = new WebSocket(`${WEBSOCKET_PROTOCOL}//${window.location.host}`);
 
 let id = null;
+let attack_frame = -3;
+let dead = false;
+let respawn_rem_time = 0;
+
 let players = new Map();
 const snapshots = [];
 let team_point = null;
 let frame = 0;
 let remaining_time = null;
-let attack_frame = -3;
 /** @type{Map<string, { walking: number, hit: number }>} */
 let animation_frame = new Map();
 
@@ -202,6 +205,21 @@ socket.addEventListener("message", (event) => {
             }
             break;
         }
+
+        case "died": {
+            dead = true;
+            break;
+        }
+
+        case "up_rt": {
+            respawn_rem_time = data.t;
+            break;
+        }
+
+        case "respawn": {
+            dead = false;
+            break;
+        }
     }
 });
 
@@ -306,9 +324,11 @@ function main_loop() {
     if (id !== null) {
         frame++;
         //game update
-        player_update(mouse_inputs, key_inputs);
-        mouse_inputs.movement_x = 0;
-        mouse_inputs.movement_y = 0;
+        if (!dead) {
+            update_local_player(mouse_inputs, key_inputs);
+            mouse_inputs.movement_x = 0;
+            mouse_inputs.movement_y = 0;
+        }
         //send
         send_input();
         send_rot(get_local_player());
@@ -330,7 +350,9 @@ function main_loop() {
             team_point, remaining_time,
             players.get(id).team,
             is_match_finished,
-            winner
+            winner,
+            dead,
+            respawn_rem_time
         );
         //dev
         /*

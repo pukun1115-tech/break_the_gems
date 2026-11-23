@@ -19,6 +19,7 @@
  * @property {number} hp
  * @property {"red" | "blue"} team
  * @property {boolean} crouch
+ * @property {boolean} dead
  * @property {Vec3} pos
  * @property {Vec3} rot
  * @property {{ walking: boolean, hit: boolean }} animation
@@ -38,6 +39,7 @@
  * @property {number} attack_time
  * @property {number} velocity_y
  * @property {number} super_break_time
+ * @property {number} died_time
  */
 
 /**

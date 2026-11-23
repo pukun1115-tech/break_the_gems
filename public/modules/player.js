@@ -23,7 +23,7 @@ export function set_local_player_rot(rot) {
  * @param {{movement_x: number, movement_y: number}} mouse_inputs
  * @param {Record<string, boolean>} key_inputs
  */
-export function player_update(mouse_inputs, key_inputs) {
+export function update_local_player(mouse_inputs, key_inputs) {
     //view
     local_player.rot.x = Math.max(-90, Math.min(90, local_player.rot.x + mouse_inputs.movement_y * MOUSE_SENSITIVITY));
     local_player.rot.y = local_player.rot.y - mouse_inputs.movement_x * MOUSE_SENSITIVITY;

@@ -106,9 +106,10 @@ export function is_on_ground(chunks, px, py, pz, crouch) {
  */
 export function check_point_player_collision(px, py, pz, players, team) {
     for (const p of players.values()) {
-        if (p.team === team) {
+        if (p.team === team || p.dead) {
             continue;
         }
+
         if (
             px >= p.pos.x - PLAYER_HIT_X / 2 &&
             px <= p.pos.x + PLAYER_HIT_X / 2 &&

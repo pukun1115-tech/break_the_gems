@@ -221,7 +221,7 @@ function draw_players(players, id, animation_time) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, p_cube_ibo);
 
     for (const p of players) {
-        if (p.id === id) {
+        if (p.id === id || p.dead) {
             continue;
         }
 

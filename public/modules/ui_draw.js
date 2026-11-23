@@ -13,8 +13,20 @@ window.addEventListener("resize", () => {
 });
 resize_ui_canvas();
 
-export function ui_draw(hp, attack, team_point, rem_tm, my_team, finish, r) {
+export function ui_draw(hp, attack, team_point, rem_tm, my_team, finish, r, dead, rt) {
     ctx.clearRect(0, 0, ui_canvas.width, ui_canvas.height);
+    console.log(dead);
+    if (dead) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(0, 0, ui_canvas.width, ui_canvas.height);
+        ctx.fillStyle = "rgba(255, 0, 0, 1)";
+        ctx.font = "bold 60px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("YOU DIED", ui_canvas.width / 2, ui_canvas.height / 2);
+        ctx.font = "30px sans-serif";
+        ctx.fillText(`respawning in ${rt}`, ui_canvas.width / 2, ui_canvas.height / 2 + 60);
+    }
 
     draw_hp(hp);
 
