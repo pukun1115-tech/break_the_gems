@@ -21,6 +21,7 @@ import {
     BREAK_GEM_COOLDOWN,
     SUPER_BREAK_COOLDOWN,
     RESPAWN_COOLDOWN,
+    BOMB_COOLDOWN,
 
     MATCH_TIME,
     MATCH_WAITING_TIME
@@ -658,6 +659,9 @@ export class Game {
                         })
                     )
                 }));
+
+                //reset super break
+                Game.super_break.clear();
 
                 //start match
                 Game.is_match_finished = false;
