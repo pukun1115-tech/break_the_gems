@@ -394,30 +394,34 @@ export class Game {
             Game.add_player_hp(target.id, -20);
             send_text_frame(socket, JSON.stringify({ type: "attack" }));
         } else if (target.type === "break_block") {
-            if (target.block_type === 0) {
+            if (target.block.type === 0) {
                 return;
             }
 
             if (
                 can_break &&
-                (target.block_type !== 3 && target.block_type !== 5)
+                (target.block.type !== 3 && target.block.type !== 5)
             ) {
-                const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
-                if (result !== null) {
-                    state.break_time = Game.frame;
+                if (target.block.type === 7) {
+                    //
+                } else {
+                    const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
+                    if (result !== null) {
+                        state.break_time = Game.frame;
 
-                    Game.broadcast(JSON.stringify({
-                        type: "update_map",
-                        chunk_key: result.chunk_key,
-                        pos: result.pos,
-                        block: result.block
-                    }));
+                        Game.broadcast(JSON.stringify({
+                            type: "update_map",
+                            chunk_key: result.chunk_key,
+                            pos: result.pos,
+                            block: result.block
+                        }));
+                    }
                 }
             } else if (
                 can_break_gem &&
                 (
-                    (player.team === "red" && target.block_type === 5) ||
-                    (player.team === "blue" && target.block_type === 3)
+                    (player.team === "red" && target.block.type === 5) ||
+                    (player.team === "blue" && target.block.type === 3)
                 )
             ) {
                 const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
