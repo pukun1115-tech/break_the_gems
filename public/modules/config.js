@@ -96,6 +96,12 @@ export const BLOCK_TEXTURECOORD = {
     }),
     7: createBlockUV({
         "top": [
+            25, 15,
+            31, 15,
+            31, 9,
+            25, 9
+        ],
+        "front": [
             17, 15,
             23, 15,
             23, 9,
