@@ -13,7 +13,7 @@ import {
     check_point_player_collision
 } from "./collision.js";
 
-/** @import { Vec3, ID, Player } from "./types.js" */
+/** @import { Vec3, ID, Player, Block } from "./types.js" */
 
 /**
  * @param {Map<string, Chunk> | null} chunks
@@ -22,7 +22,7 @@ import {
  * @param {Map<string, Player> | null} players
  * @param {number} break_max_distance
  * @param {number} attack_max_distance
- * @returns {{ type: "break_block", chunk_key: string, pos: Vec3, block: { type: number, stage: number }, block_type: number } | { type: "hit", id: ID } | null}
+ * @returns {{ type: "break_block", chunk_key: string, pos: Vec3, block: Block } | { type: "hit", id: ID } | null}
  */
 export function find_target(chunks, t, team, players, break_max_distance, attack_max_distance) {
     const rot_x = deg2rad(t.rot.x);
@@ -82,7 +82,7 @@ export function find_target(chunks, t, team, players, break_max_distance, attack
             type: "break_block",
             chunk_key: chunk_key,
             pos: { x: local_x, y: local_y, z: local_z },
-            block_type: target_chunk.map[local_x][local_y][local_z].type
+            block: structuredClone(target_chunk.map[local_x][local_y][local_z])
         };
     }
 
