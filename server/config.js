@@ -76,3 +76,4 @@ export const PLACE_COOLDOWN = 0.25 * SERVER_FPS;
 export const ATTACK_COOLDOWN = 0.2 * SERVER_FPS;
 export const SUPER_BREAK_COOLDOWN = 10 * SERVER_FPS;
 export const RESPAWN_COOLDOWN = 4 * SERVER_FPS;
+export const BOMB_COOLDOWN = 2 * SERVER_FPS;
