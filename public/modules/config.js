@@ -42,7 +42,8 @@ export const BLOCK_TYPES = {
     3: "red_gem",
     4: "blue_dirt",
     5: "blue_gem",
-    6: "bomb"
+    6: "gray_dirt",
+    7: "bomb"
 };
 export const BLOCK_TEXTURECOORD = {
     1: createBlockUV({
@@ -91,6 +92,14 @@ export const BLOCK_TEXTURECOORD = {
             15, 15,
             15, 9,
             9, 9
+        ]
+    }),
+    7: createBlockUV({
+        "top": [
+            17, 15,
+            23, 15,
+            23, 9,
+            17, 9
         ]
     })
 };
