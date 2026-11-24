@@ -57,7 +57,10 @@ server.on("upgrade", (request, socket, head) => {
     });
 
     socket.on("error", (error) => {
-        console.log(`error: ${error}`);
+        if (error.code === "ECONNRESET") {
+            //return;
+        }
+        console.log(error);
         clean_up();
         socket.destroy();
     });
