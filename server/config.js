@@ -50,7 +50,7 @@ export const MAX_BUFFER_SIZE = 512 * 512;
 //Game
 export const MAX_PLAYERS = 6;
 export const SERVER_FPS = 20;
-export const MATCH_TIME = 240;
+export const MATCH_TIME = 600;
 export const MATCH_WAITING_TIME = 15;
 
 export const CHUNK_SIZE_X = 16;
@@ -74,5 +74,5 @@ export const BREAK_COOLDOWN = (0.5 / 8) * SERVER_FPS;
 export const BREAK_GEM_COOLDOWN = (4 / 8) * SERVER_FPS;
 export const PLACE_COOLDOWN = 0.25 * SERVER_FPS;
 export const ATTACK_COOLDOWN = 0.2 * SERVER_FPS;
-export const SUPER_BREAK_COOLDOWN = 1 * SERVER_FPS;
+export const SUPER_BREAK_COOLDOWN = 10 * SERVER_FPS;
 export const RESPAWN_COOLDOWN = 4 * SERVER_FPS;
