@@ -58,7 +58,7 @@ server.on("upgrade", (request, socket, head) => {
 
     socket.on("error", (error) => {
         if (error.code === "ECONNRESET") {
-            //return;
+            return;
         }
         console.log(error);
         clean_up();
