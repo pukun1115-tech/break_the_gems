@@ -108,7 +108,8 @@ export class Game {
             attack_time: Game.frame - ATTACK_COOLDOWN,
             velocity_y: 0,
             super_break_time: Game.frame - SUPER_BREAK_COOLDOWN,
-            died_time: 0 - RESPAWN_COOLDOWN
+            died_time: Game.frame - RESPAWN_COOLDOWN,
+            bomb_time: Game.frame - BOMB_COOLDOWN
         });
     }
 
@@ -567,6 +568,22 @@ export class Game {
                     const t = structuredClone({ pos: player.pos, rot: player.rot });
                     t.pos.y += PLAYER_EYE_Y
                     Game.super_break.add(t);
+                }
+            }
+
+            //KeyE
+            if (input.key_inputs["KeyE"] === true) {
+                if (state.bomb_time + BOMB_COOLDOWN <= Game.frame) {
+                    const result = place_block(Game.chunks, Game.players, player, 7);
+                    if (result !== null) {
+                        state.bomb_time = Game.frame;
+                        Game.broadcast(JSON.stringify({
+                            type: "update_map",
+                            chunk_key: result.chunk_key,
+                            pos: result.pos,
+                            block: result.block
+                        }));
+                    }
                 }
             }
         }
