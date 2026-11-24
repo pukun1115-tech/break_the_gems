@@ -299,8 +299,6 @@ export class Game {
      * @param {number} delta_time
      */
     static update_player_pos_y(player, input, state, delta_time) {
-        let next_y = player.pos.y;
-
         if (player.crouch && input.key_inputs["KeyC"] !== true) {
             if (
                 check_player_chunk_collision(
@@ -327,25 +325,31 @@ export class Game {
             }
         }
 
-        next_y += state.velocity_y * delta_time;
+        let sign = Math.sign(state.velocity_y * delta_time);
+        let remaining = state.velocity_y * delta_time;
+        while ((sign > 0 && remaining > 0) || (sign < 0 && remaining < 0)) {
+            const step = sign * Math.min(Math.abs(remaining), 0.1);
+            remaining -= step;
+            
+            const collision_y = check_player_chunk_collision(
+                Game.chunks,
+                player.pos.x,
+                player.pos.y + step,
+                player.pos.z,
+                player.crouch
+            );
 
-        const collision_y = check_player_chunk_collision(
-            Game.chunks,
-            player.pos.x,
-            next_y,
-            player.pos.z,
-            player.crouch
-        );
-
-        if (collision_y === null) {
-            player.pos.y = next_y;
-        } else {
-            if (next_y > player.pos.y) {
-                player.pos.y = collision_y.min_y - PLAYER_HIT_Y - COLLISION_EPSILON;
-            } else if (next_y < player.pos.y) {
-                player.pos.y = collision_y.max_y + COLLISION_EPSILON;
+            if (collision_y === null) {
+                player.pos.y += step;
+            } else {
+                if (sign > 0) {
+                    player.pos.y = collision_y.min_y - PLAYER_HIT_Y - COLLISION_EPSILON;
+                } else if (sign < 0) {
+                    player.pos.y = collision_y.max_y + COLLISION_EPSILON;
+                }
+                state.velocity_y = 0;
+                break;
             }
-            state.velocity_y = 0;
         }
     }
 
