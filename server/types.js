@@ -40,6 +40,7 @@
  * @property {number} velocity_y
  * @property {number} super_break_time
  * @property {number} died_time
+ * @property {number} bomb_time
  */
 
 /**
