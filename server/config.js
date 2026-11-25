@@ -78,4 +78,4 @@ export const SUPER_BREAK_COOLDOWN = 10 * SERVER_FPS;
 export const RESPAWN_COOLDOWN = 4 * SERVER_FPS;
 export const BOMB_COOLDOWN = 2 * SERVER_FPS;
 
-export const BOMB_DISTANCE = 4;
+export const BOMB_DISTANCE = 2;
