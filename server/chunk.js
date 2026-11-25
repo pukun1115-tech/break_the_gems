@@ -1,7 +1,9 @@
 import {
     CHUNK_SIZE_X,
     CHUNK_SIZE_Y,
-    CHUNK_SIZE_Z
+    CHUNK_SIZE_Z,
+
+    BOMB_DISTANCE
 } from "./config.js";
 
 /** import { Block } from "./types.js" */
@@ -17,7 +19,7 @@ export function get_chunk_key(x, z) {
 
 /**
  * @param {string} key
- * @returns {{x: number, y: number}} 
+ * @returns {{x: number, z: number}} 
  */
 export function parse_chunk_key(key) {
     const [str_x, str_z] = key.split("_");
@@ -179,4 +181,46 @@ export function create_initial_chunks() {
     chunks.set(get_chunk_key(1, 1), c11);
     
     return chunks;
+}
+
+/**
+ * @param{Map<string, Chunk>>} chunks
+ * @param {string} chunk_key
+ * @param {Vec3} local_pos
+ */
+export function explode_bomb(chunks, chunk_key, bomb_pos) {
+    const { x: lcx, z: lcz } = parse_chunk_key(chunk_key);
+    const wx = bomb_pos.x + lcx * CHUNK_SIZE_X;
+    const wy = bomb_pos.y;
+    const wz = bomb_pos.z + lcz * CHUNK_SIZE_Z;
+
+    for (let x = wx - BOMB_DISTANCE; x <= wx + BOMB_DISTANCE; x++) {
+        for (let y = wy - BOMB_DISTANCE; y <= wy + BOMB_DISTANCE; y++) {
+            for (let z = wz - BOMB_DISTANCE; z <= wz + BOMB_DISTANCE; z++) {
+                const dx = x - wx;
+                const dy = y - wy;
+                const dz = z - wz;
+                
+                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                if (dist <= BOMB_DISTANCE) {
+                    const cx = Math.floor(x / CHUNK_SIZE_X);
+                    const cz = Math.floor(z / CHUNK_SIZE_Z);
+                    const c_key = get_chunk_key(cx, cz);
+
+                    const target = chunks.get(c_key);
+                    if (target === undefined) {
+                        continue;
+                    }
+                    
+                    const lx = x - cx * CHUNK_SIZE_X;
+                    const lz = z - cz * CHUNK_SIZE_Z;
+                    if (target.map[lx][y][lz].type === 1) {
+                        continue;
+                    }
+                    target.set_block(0, 0, lx, y, lz);
+                }
+            }
+        }
+    }
 }
