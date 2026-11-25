@@ -197,10 +197,10 @@ export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
     const wz = bomb_pos.z + lcz * CHUNK_SIZE_Z;
 
     for (let x = wx - BOMB_DISTANCE; x <= wx + BOMB_DISTANCE; x++) {
+        const dx = x - wx;
         for (let y = wy - BOMB_DISTANCE; y <= wy + BOMB_DISTANCE; y++) {
+            const dy = y - wy;
             for (let z = wz - BOMB_DISTANCE; z <= wz + BOMB_DISTANCE; z++) {
-                const dx = x - wx;
-                const dy = y - wy;
                 const dz = z - wz;
                 
                 const dist = dx * dx + dy * dy + dz * dz;
@@ -217,7 +217,11 @@ export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
                     
                     const lx = x - cx * CHUNK_SIZE_X;
                     const lz = z - cz * CHUNK_SIZE_Z;
-                    if (target.map[lx][y][lz].type === 1) {
+                    if (
+                        target.map[lx][y][lz].type === 1 ||
+                        target.map[lx][y][lz].type === 3 ||
+                        target.map[lx][y][lz].type === 5
+                    ) {
                         continue;
                     }
                     target.set_block(0, 0, lx, y, lz);
