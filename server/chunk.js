@@ -218,6 +218,7 @@ export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
                     const lx = x - cx * CHUNK_SIZE_X;
                     const lz = z - cz * CHUNK_SIZE_Z;
                     if (
+                        target.map[lx][y][lz].type === 0 ||
                         target.map[lx][y][lz].type === 1 ||
                         target.map[lx][y][lz].type === 3 ||
                         target.map[lx][y][lz].type === 5
