@@ -481,8 +481,9 @@ export class Game {
         for (const s of Game.super_break) {
             for (let i = 0; i < n; i++) {
                 const target = find_target(Game.chunks, s, null, null, 16, 0);
-                if (target === null || target.type === "hit") {
-                    continue;
+                if (target === null) {
+                    Game.super_break.delete(s);
+                    break;
                 }
 
                 if (
