@@ -203,9 +203,9 @@ export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
                 const dy = y - wy;
                 const dz = z - wz;
                 
-                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                const dist = dx * dx + dy * dy + dz * dz;
 
-                if (dist <= BOMB_DISTANCE) {
+                if (dist <= BOMB_DISTANCE * BOMB_DISTANCE) {
                     const cx = Math.floor(x / CHUNK_SIZE_X);
                     const cz = Math.floor(z / CHUNK_SIZE_Z);
                     const c_key = get_chunk_key(cx, cz);
