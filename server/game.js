@@ -2,6 +2,9 @@ import { Chunk, create_initial_chunks } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
 import {
     SERVER_FPS,
+    MATCH_TIME,
+    MATCH_WAITING_TIME,
+    
     GRAVITY,
     COLLISION_EPSILON,
 
@@ -22,9 +25,6 @@ import {
     SUPER_BREAK_COOLDOWN,
     RESPAWN_COOLDOWN,
     BOMB_COOLDOWN,
-
-    MATCH_TIME,
-    MATCH_WAITING_TIME
 } from "./config.js";
 import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
@@ -99,22 +99,6 @@ export class Game {
 
     /**
      * @param {ID} id
-     */
-    static set_initial_player_state(id) {
-        Game.players_states.set(id, {
-            break_time: Game.frame - BREAK_COOLDOWN,
-            break_gem_time: Game.frame - BREAK_GEM_COOLDOWN,
-            place_time: Game.frame - PLACE_COOLDOWN,
-            attack_time: Game.frame - ATTACK_COOLDOWN,
-            velocity_y: 0,
-            super_break_time: Game.frame - SUPER_BREAK_COOLDOWN,
-            died_time: Game.frame - RESPAWN_COOLDOWN,
-            bomb_time: Game.frame - BOMB_COOLDOWN
-        });
-    }
-
-    /**
-     * @param {ID} id
      * @param {"red" | "blue"} team
      */
     static set_initial_player(id, team) {
@@ -140,6 +124,22 @@ export class Game {
                 left_click: false,
                 right_click: false
             }
+        });
+    }
+
+    /**
+     * @param {ID} id
+     */
+    static set_initial_player_state(id) {
+        Game.players_states.set(id, {
+            break_time: Game.frame - BREAK_COOLDOWN,
+            break_gem_time: Game.frame - BREAK_GEM_COOLDOWN,
+            place_time: Game.frame - PLACE_COOLDOWN,
+            attack_time: Game.frame - ATTACK_COOLDOWN,
+            velocity_y: 0,
+            super_break_time: Game.frame - SUPER_BREAK_COOLDOWN,
+            died_time: Game.frame - RESPAWN_COOLDOWN,
+            bomb_time: Game.frame - BOMB_COOLDOWN
         });
     }
 
@@ -184,17 +184,21 @@ export class Game {
      * @param {WebSocket} socket
      */
     static remove_player(socket) {
+        Game.ids_by_socket.delete(socket);
+        
         const id = Game.ids_by_socket.get(socket);
         if (id === undefined) {
             return;
         }
         
         Game.sockets_by_id.delete(id);
-        Game.ids_by_socket.delete(socket);
+        
         Game.players.delete(id);
         Game.player_inputs.delete(id);
         Game.players_states.delete(id);
+        
         Game.the_dead.delete(id);
+        
         Game.broadcast(JSON.stringify({ type: "player_left", id: id }));
 
         const player = Game.players.get(id);
