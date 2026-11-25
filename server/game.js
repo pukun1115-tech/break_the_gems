@@ -1,4 +1,4 @@
-import { Chunk, create_initial_chunks } from "./chunk.js";
+import { Chunk, create_initial_chunks, explode_bomb } from "./chunk.js";
 import { send_text_frame } from "./connection/socket.js";
 import {
     SERVER_FPS,
@@ -408,7 +408,7 @@ export class Game {
                 (target.block.type !== 3 && target.block.type !== 5)
             ) {
                 if (target.block.type === 7) {
-                    //
+                    explode_bomb(Game.chunks, target.chunk_key, target.pos, Game.broadcast);
                 } else {
                     const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
                     if (result !== null) {
