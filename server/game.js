@@ -486,7 +486,7 @@ export class Game {
                 }
 
                 if (
-                    (target.block_type === 1 || target.block_type === 3 || target.block_type === 5)
+                    (target.block.type === 1 || target.block.type === 3 || target.block.type === 5)
                 ) {
                     Game.super_break.delete(s);
                     break;
