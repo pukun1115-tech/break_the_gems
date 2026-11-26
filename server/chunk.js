@@ -200,6 +200,9 @@ export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
         const dx = x - wx;
         for (let y = wy - BOMB_DISTANCE; y <= wy + BOMB_DISTANCE; y++) {
             const dy = y - wy;
+            if (y < 0 || y >= CHUNK_SIZE_Y) {
+                continue;
+            }
             for (let z = wz - BOMB_DISTANCE; z <= wz + BOMB_DISTANCE; z++) {
                 const dz = z - wz;
                 
