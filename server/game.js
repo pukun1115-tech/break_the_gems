@@ -184,9 +184,8 @@ export class Game {
      * @param {WebSocket} socket
      */
     static remove_player(socket) {
-        Game.ids_by_socket.delete(socket);
-        
         const id = Game.ids_by_socket.get(socket);
+        Game.ids_by_socket.delete(socket);
         if (id === undefined) {
             return;
         }
