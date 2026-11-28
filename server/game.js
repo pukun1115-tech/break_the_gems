@@ -73,6 +73,7 @@ export class Game {
         blue: 8
     };
 
+    /** @type {Set<{ pos: Vec3, velocity: Vec3, time: number }>} */
     static bombs = new Set();
 
     static init_chunks() {
