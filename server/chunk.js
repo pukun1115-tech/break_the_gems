@@ -7,7 +7,6 @@ import {
 } from "./config.js";
 
 /** import { Block } from "./types.js" */
-/** import { Game } from "./game.js" */
 
 /**
  * @param {number} x
@@ -188,9 +187,9 @@ export function create_initial_chunks() {
  * @param{Map<string, Chunk>>} chunks
  * @param {string} chunk_key
  * @param {Vec3} local_pos
- * @param {Game.broadcast} broadcast
+ * @param {Array<{ key: string, pos: Vec3, block: Block }>} changed_blocks
  */
-export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
+export function explode_bomb(chunks, chunk_key, bomb_pos, changed_blocks) {
     const { x: lcx, z: lcz } = parse_chunk_key(chunk_key);
     const wx = bomb_pos.x + lcx * CHUNK_SIZE_X;
     const wy = bomb_pos.y;
@@ -229,12 +228,8 @@ export function explode_bomb(chunks, chunk_key, bomb_pos, broadcast) {
                         continue;
                     }
                     target.set_block(0, 0, lx, y, lz);
-                    broadcast(JSON.stringify({
-                        type: "update_map",
-                        chunk_key: c_key,
-                        pos: { x: lx, y: y, z: lz },
-                        block: { type: 0, stage: 0 }
-                    }));
+
+                    changed_blocks.push({ key: c_key, pos: { x: lx, y: y, z: lz }, block: { type: 0, stage: 0 } });
                 }
             }
         }
