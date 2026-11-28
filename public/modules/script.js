@@ -150,6 +150,14 @@ socket.addEventListener("message", (event) => {
             break;
         }
 
+        case "change_map": {
+            for (const d of data.c) {
+                chunks.get(d.key).map[d.pos.x][d.pos.y][d.pos.z] = d.block;
+                chunks.get(d.key).generate_mesh();
+            }
+            break;
+        }
+
         case "attack": {
             attack_frame = frame;
             break;
