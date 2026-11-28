@@ -30,7 +30,7 @@ import { check_player_chunk_collision, is_on_ground } from "./collision.js";
 import { deg2rad } from "./rotation.js";
 import { find_target, break_block, place_block } from "./break_place_block.js";
 
-/** @import { WebSocket, Vec3, ID, Player, PlayerInput, PlayerState } from "./types.js" */
+/** @import { WebSocket, Vec3, Block, ID, Player, PlayerInput, PlayerState } from "./types.js" */
 
 export class Game {
     static frame = 0;
@@ -377,10 +377,11 @@ export class Game {
     }
 
     /**
-     * @param {Player} player 
-     * @param {PlayerState} state 
+     * @param {Player} player
+     * @param {PlayerState} state
+     * @param {Array<{ key: string, pos: Vec3, block: Block }>} changed_blocks
      */
-    static update_player_mouse_click_left(player, state) {
+    static update_player_mouse_click_left(player, state, changed_blocks) {
         const socket = Game.sockets_by_id.get(player.id);
 
         const can_break = (state.break_time + BREAK_COOLDOWN <= Game.frame);
@@ -410,18 +411,13 @@ export class Game {
                 (target.block.type !== 3 && target.block.type !== 5)
             ) {
                 if (target.block.type === 7) {
-                    explode_bomb(Game.chunks, target.chunk_key, target.pos, Game.broadcast);
+                    explode_bomb(Game.chunks, target.chunk_key, target.pos, changed_blocks);
                 } else {
                     const result = break_block(target.chunk_key, target.pos, Game.chunks, 1);
                     if (result !== null) {
                         state.break_time = Game.frame;
 
-                        Game.broadcast(JSON.stringify({
-                            type: "update_map",
-                            chunk_key: result.chunk_key,
-                            pos: result.pos,
-                            block: result.block
-                        }));
+                        changed_blocks.push({ key: result.chunk_key, pos: result.pos, block: result.block });
                     }
                 }
             } else if (
@@ -435,12 +431,7 @@ export class Game {
                 if (result !== null) {
                     state.break_gem_time = Game.frame;
 
-                    Game.broadcast(JSON.stringify({
-                        type: "update_map",
-                        chunk_key: result.chunk_key,
-                        pos: result.pos,
-                        block: result.block
-                    }));
+                    changed_blocks.push({ key: result.chunk_key, pos: result.pos, block: result.block });
 
                     if (result.block.type === 0) {
                         if (player.team === "red") {
@@ -462,23 +453,22 @@ export class Game {
     /**
      * @param {Player} player
      * @param {PlayerState} state
+     * @param {Array<{ key: string, pos: Vec3, block: Block }>} changed_blocks
      */
-    static update_player_mouse_click_right(player, state) {
+    static update_player_mouse_click_right(player, state, changed_blocks) {
         if (state.place_time + PLACE_COOLDOWN <= Game.frame) {
             const result = place_block(Game.chunks, Game.players, player, (player.team === "red" ? 2 : 4));
             if (result !== null) {
                 state.place_time = Game.frame;
-                Game.broadcast(JSON.stringify({
-                    type: "update_map",
-                    chunk_key: result.chunk_key,
-                    pos: result.pos,
-                    block: result.block
-                }));
+                changed_blocks.push({ key: result.chunk_key, pos: result.pos, block: result.block });
             }
         }
     }
 
-    static update_super_break() {
+    /**
+     * @param {Array<{ key: string, pos: Vec3, block: Block }>} changed_blocks
+     */
+    static update_super_break(changed_blocks) {
         const n = 4;
         for (const s of Game.super_break) {
             for (let i = 0; i < n; i++) {
@@ -497,12 +487,7 @@ export class Game {
 
                 const result = break_block(target.chunk_key, target.pos, Game.chunks, 8);
                 if (result !== null) {
-                    Game.broadcast(JSON.stringify({
-                        type: "update_map",
-                        chunk_key: result.chunk_key,
-                        pos: result.pos,
-                        block: result.block
-                    }));
+                    changed_blocks.push({ key: result.chunk_key, pos: result.pos, block: result.block });
                 }
             }
         }
@@ -630,6 +615,7 @@ export class Game {
 
     static update() {
         const delta_time = 1 / SERVER_FPS;
+        /** @type {Array<{ key: string, pos: Vec3, block: Block }>} */
         let changed_blocks = [];
         Game.tick();
         for (const id of Game.ids_by_socket.values()) {
@@ -656,10 +642,10 @@ export class Game {
             //mouse input
             if (!Game.is_match_finished) {
                 if (input.mouse_inputs.left_click) {
-                    Game.update_player_mouse_click_left(player, state);
+                    Game.update_player_mouse_click_left(player, state, changed_blocks);
                 }
                 if (input.mouse_inputs.right_click) {
-                    Game.update_player_mouse_click_right(player, state);
+                    Game.update_player_mouse_click_right(player, state, changed_blocks);
                 }
             }
 
@@ -695,7 +681,7 @@ export class Game {
         }
 
         //super break
-        Game.update_super_break();
+        Game.update_super_break(changed_blocks);
 
         //respawning
         Game.update_the_dead();
