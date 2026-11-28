@@ -479,10 +479,6 @@ export class Game {
     }
 
     static update_super_break() {
-        if (Game.is_match_finished) {
-            return;
-        }
-
         const n = 4;
         for (const s of Game.super_break) {
             for (let i = 0; i < n; i++) {
@@ -534,101 +530,26 @@ export class Game {
         }
     }
 
-    static update() {
-        const delta_time = 1 / SERVER_FPS;
-        Game.tick();
-        for (const id of Game.ids_by_socket.values()) {
-            const player = Game.players.get(id);
-            const input = Game.player_inputs.get(id);
-            const state = Game.players_states.get(id);
-            if (input === undefined || player === undefined || state === undefined) {
-                continue;
-            }
+    static get_winner() {
+        return (Game.team_point.red === Game.team_point.blue ? "draw" : (Game.team_point.red > Game.team_point.blue ? "red" : "blue"));
+    }
 
-            if (player.dead) {
-                continue;
-            }
-
-            //WASD
-            Game.update_player_pos_xz(player, input, delta_time);
-
-            //velocity_y
-            Game.update_player_pos_y(player, input, state, delta_time);
-
-            //animation
-            Game.update_player_animation(player, input);
-
-            //mouse input
-            if (!Game.is_match_finished) {
-                if (input.mouse_inputs.left_click) {
-                    Game.update_player_mouse_click_left(player, state);
-                }
-                if (input.mouse_inputs.right_click) {
-                    Game.update_player_mouse_click_right(player, state);
-                }
-            }
-
-            //KeyQ
-            if (input.key_inputs["KeyQ"] === true) {
-                if (state.super_break_time + SUPER_BREAK_COOLDOWN <= Game.frame) {
-                    state.super_break_time = Game.frame;
-                    const t = structuredClone({ pos: player.pos, rot: player.rot });
-                    t.pos.y += PLAYER_EYE_Y
-                    Game.super_break.add(t);
-                }
-            }
-
-            //KeyE
-            if (input.key_inputs["KeyE"] === true) {
-                if (state.bomb_time + BOMB_COOLDOWN <= Game.frame) {
-                    const result = place_block(Game.chunks, Game.players, player, 7);
-                    if (result !== null) {
-                        state.bomb_time = Game.frame;
-                        Game.broadcast(JSON.stringify({
-                            type: "update_map",
-                            chunk_key: result.chunk_key,
-                            pos: result.pos,
-                            block: result.block
-                        }));
-                    }
-                }
-            }
-        }
-
-        //super break
-        Game.update_super_break();
-
-        //respawning
-        Game.update_the_dead();
-
-        //match finish?
+    static check_match_state() {
         if (!Game.is_match_finished) {
             if (Game.team_point.red === 0 || Game.team_point.blue === 0) {
                 Game.is_match_finished = true;
                 Game.wait_remaining_time = MATCH_WAITING_TIME;
-
-                if (Game.team_point.red === 0 && Game.team_point.blue === 0) {
-                    Game.broadcast(JSON.stringify({
-                        type: "finish",
-                        r: "draw"
-                    }));
-                } else if (Game.team_point.red === 0) {
-                    Game.broadcast(JSON.stringify({
-                        type: "finish",
-                        r: "blue"
-                    }));
-                } else {
-                    Game.broadcast(JSON.stringify({
-                        type: "finish",
-                        r: "red"
-                    }));
-                }
+                
+                Game.broadcast(JSON.stringify({
+                    type: "finish",
+                    r: Game.get_winner()
+                }));
             } else if (Game.remaining_time <= 0) {
                 Game.is_match_finished = true;
                 Game.wait_remaining_time = MATCH_WAITING_TIME;
                 Game.broadcast(JSON.stringify({
                     type: "finish",
-                    r: (Game.team_point.red === Game.team_point.blue ? "draw" : (Game.team_point.red > Game.team_point.blue ? "red" : "blue"))
+                    r: Game.get_winner()
                 }));
             } else {
                 Game.broadcast(JSON.stringify({
@@ -705,7 +626,82 @@ export class Game {
                 }));
             }
         }
+    }
 
+    static update() {
+        const delta_time = 1 / SERVER_FPS;
+        let changed_blocks = [];
+        Game.tick();
+        for (const id of Game.ids_by_socket.values()) {
+            const player = Game.players.get(id);
+            const input = Game.player_inputs.get(id);
+            const state = Game.players_states.get(id);
+            if (input === undefined || player === undefined || state === undefined) {
+                continue;
+            }
+
+            if (player.dead) {
+                continue;
+            }
+
+            //WASD
+            Game.update_player_pos_xz(player, input, delta_time);
+
+            //velocity_y
+            Game.update_player_pos_y(player, input, state, delta_time);
+
+            //animation
+            Game.update_player_animation(player, input);
+
+            //mouse input
+            if (!Game.is_match_finished) {
+                if (input.mouse_inputs.left_click) {
+                    Game.update_player_mouse_click_left(player, state);
+                }
+                if (input.mouse_inputs.right_click) {
+                    Game.update_player_mouse_click_right(player, state);
+                }
+            }
+
+            if (Game.is_match_finished) {
+                continue;
+            }
+
+            //KeyQ
+            if (input.key_inputs["KeyQ"] === true) {
+                if (state.super_break_time + SUPER_BREAK_COOLDOWN <= Game.frame) {
+                    state.super_break_time = Game.frame;
+                    const t = structuredClone({ pos: player.pos, rot: player.rot });
+                    t.pos.y += PLAYER_EYE_Y
+                    Game.super_break.add(t);
+                }
+            }
+
+            //KeyE
+            if (input.key_inputs["KeyE"] === true) {
+                if (state.bomb_time + BOMB_COOLDOWN <= Game.frame) {
+                    const result = place_block(Game.chunks, Game.players, player, 7);
+                    if (result !== null) {
+                        state.bomb_time = Game.frame;
+                        Game.broadcast(JSON.stringify({
+                            type: "update_map",
+                            chunk_key: result.chunk_key,
+                            pos: result.pos,
+                            block: result.block
+                        }));
+                    }
+                }
+            }
+        }
+
+        //super break
+        Game.update_super_break();
+
+        //respawning
+        Game.update_the_dead();
+
+        //match finish?
+        Game.check_match_state();
 
         const s_players = structuredClone(Game.players);
         for (const id of s_players.keys()) {
@@ -719,6 +715,13 @@ export class Game {
             type: "update_players",
             players: Array.from(s_players.values())
         }));
+
+        if (changed_blocks.length !== 0) {
+            Game.broadcast(JSON.stringify({
+                type: "change_map",
+                c: changed_blocks
+            }));
+        }
     }
 
     static tick() {
