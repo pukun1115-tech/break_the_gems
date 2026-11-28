@@ -73,6 +73,8 @@ export class Game {
         blue: 8
     };
 
+    static bombs = new Set();
+
     static init_chunks() {
         Game.chunks = create_initial_chunks();
     }
